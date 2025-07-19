@@ -10,7 +10,7 @@ class ActivityLog extends Model
         'action',
         'model_type',
         'model_id',
-                'description', // ✅ أضف هذا
+                'description',
     ];
     public function model()
 {

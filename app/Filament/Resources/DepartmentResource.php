@@ -16,12 +16,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class DepartmentResource extends Resource
 {
-    // المجموعة (الدروب داون) داخل "الأصول"
-protected static ?string $navigationGroup = 'إدارة الأصول'; // إذا حابب تجمع الموارد تحت مجموعة
+   // Group (dropdown) inside "Assets"
+protected static ?string $navigationGroup = 'Asset Management'; // To group resources under one heading
 
-    // اسم يظهر في القائمة الجانبية بدل اسم الموديل
-    protected static ?string $navigationLabel = 'الأقسام';
-    protected static ?string $pluralModelLabel = 'الأقسام';
+// Name displayed in the sidebar instead of the model name
+protected static ?string $navigationLabel = 'Departments';
+protected static ?string $pluralModelLabel = 'Departments';
 
     // أيقونة صحيحة من heroicons
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';

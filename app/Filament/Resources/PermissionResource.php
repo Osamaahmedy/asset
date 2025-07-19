@@ -18,21 +18,26 @@ class PermissionResource extends Resource
     protected static ?string $model = Permission::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
-    protected static ?string $navigationLabel = 'الصلاحيات';
-    protected static ?string $pluralLabel = 'الصلاحيات';
-    protected static ?string $modelLabel = 'صلاحية';
+    protected static ?string $navigationLabel = 'Permissions';
+    protected static ?string $pluralLabel = 'Permissions';
+    protected static ?string $modelLabel = 'Permission';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->label('اسم الصلاحية')->required(),
+            TextInput::make('name')
+                ->label('Permission Name')
+                ->required(),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('name')->label('الاسم')->sortable()->searchable(),
+            TextColumn::make('name')
+                ->label('Name')
+                ->sortable()
+                ->searchable(),
         ]);
     }
 
@@ -44,6 +49,7 @@ class PermissionResource extends Resource
             'edit' => Pages\EditPermission::route('/{record}/edit'),
         ];
     }
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('view permissions') ?? false;
@@ -63,5 +69,4 @@ class PermissionResource extends Resource
     {
         return auth()->user()?->can('delete permissions') ?? false;
     }
-
 }

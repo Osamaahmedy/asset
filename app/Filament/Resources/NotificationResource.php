@@ -16,75 +16,84 @@ class NotificationResource extends Resource
 {
     protected static ?string $model = Notification::class;
 
-    protected static ?string $navigationGroup = 'التنبيهات';
+   protected static ?string $navigationGroup = 'Notifications';
 
-    protected static ?string $navigationIcon = 'heroicon-o-bell';
+protected static ?string $navigationIcon = 'heroicon-o-bell';
 
-    protected static ?string $navigationLabel = 'الإشعارات';
+protected static ?string $navigationLabel = 'Notifications';
 
-    protected static ?string $pluralModelLabel = 'الإشعارات';
+protected static ?string $pluralModelLabel = 'Notifications';
 
-    protected static ?string $modelLabel = 'إشعار';
+protected static ?string $modelLabel = 'Notification';
+
 
     public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('message')
-                    ->label('الرسالة')
-                    ->disabled()
-                    ->required(),
-                Forms\Components\TextInput::make('status')
-                    ->label('الحالة')
-                    ->disabled()
-                    ->required(),
-                Forms\Components\Toggle::make('is_read')
-                    ->label('مقروء؟')
-                    ->disabled(),
-            ]);
-    }
+{
+    return $form
+        ->schema([
+            Forms\Components\TextInput::make('message')
+                ->label('Message')
+                ->disabled()
+                ->required(),
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('message')
-                    ->label('الرسالة')
-                    ->searchable()
-                    ->wrap(),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('الحالة')
-                    ->sortable(),
-                Tables\Columns\BooleanColumn::make('is_read')
-                    ->label('مقروء؟')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإشعار')
-                    ->dateTime()
-                    ->sortable(),
-            ])
-            ->filters([
-                Tables\Filters\Filter::make('unread')
-                    ->label('غير مقروءة فقط')
-                    ->query(fn ($query) => $query->where('is_read', false)),
-            ])
-            ->actions([
-                Tables\Actions\Action::make('markAsRead')
-                    ->label('تحديد كمقروء')
-                    ->action(fn (Notification $record) => $record->update(['is_read' => true]))
-                    ->requiresConfirmation()
-                    ->icon('heroicon-o-check'),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkAction::make('markAllRead')
-                    ->label('تحديد الكل كمقروء')
-                    ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_read' => true])))
-                    ->icon('heroicon-o-check-circle'),
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('created_at', 'desc');
-    }
+            Forms\Components\TextInput::make('status')
+                ->label('Status')
+                ->disabled()
+                ->required(),
+
+            Forms\Components\Toggle::make('is_read')
+                ->label('Read?')
+                ->disabled(),
+        ]);
+}
+
+
+   public static function table(Table $table): Table
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('message')
+                ->label('Message')
+                ->searchable()
+                ->wrap(),
+
+            Tables\Columns\TextColumn::make('status')
+                ->label('Status')
+                ->sortable(),
+
+            Tables\Columns\BooleanColumn::make('is_read')
+                ->label('Read?')
+                ->sortable(),
+
+            Tables\Columns\TextColumn::make('created_at')
+                ->label('Notification Date')
+                ->dateTime()
+                ->sortable(),
+        ])
+        ->filters([
+            Tables\Filters\Filter::make('unread')
+                ->label('Unread Only')
+                ->query(fn ($query) => $query->where('is_read', false)),
+        ])
+        ->actions([
+            Tables\Actions\Action::make('markAsRead')
+                ->label('Mark as Read')
+                ->action(fn (Notification $record) => $record->update(['is_read' => true]))
+                ->requiresConfirmation()
+                ->icon('heroicon-o-check'),
+
+            Tables\Actions\DeleteAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkAction::make('markAllRead')
+                ->label('Mark All as Read')
+                ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_read' => true])))
+                ->icon('heroicon-o-check-circle'),
+
+            Tables\Actions\DeleteBulkAction::make(),
+        ])
+        ->defaultSort('created_at', 'desc');
+}
 
     public static function getPages(): array
     {

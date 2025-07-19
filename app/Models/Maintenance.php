@@ -24,7 +24,7 @@ class Maintenance extends Model implements HasMedia
     {
         // عند الإنشاء أو التحديث
         static::saved(function ($maintenance) {
-            if ($maintenance->status === 'تمت الصيانة') {
+            if ($maintenance->status === 'Maintenance Completed') {
                 $maintenance->asset?->update([
                     'last_maintenance_date' => $maintenance->maintenance_date,
                 ]);
@@ -35,7 +35,7 @@ class Maintenance extends Model implements HasMedia
         static::deleted(function ($maintenance) {
             $latest = $maintenance->asset
                 ->maintenances()
-                ->where('status', 'تمت الصيانة')
+                ->where('status', 'Maintenance Completed')
                 ->orderByDesc('maintenance_date')
                 ->first();
 

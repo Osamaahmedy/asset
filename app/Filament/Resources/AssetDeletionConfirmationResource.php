@@ -19,58 +19,58 @@ class AssetDeletionConfirmationResource extends Resource
     protected static ?string $model = AssetDeletionConfirmation::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+protected static ?string $pluralModelLabel = 'Asset Deletion Requests';
 
-    protected static ?string $pluralModelLabel = 'طلبات حذف الأصول';
+protected static ?string $navigationLabel = 'Asset Deletion Requests';
 
-    protected static ?string $navigationLabel = 'طلبات حذف الأصول';
+   public static function form(Form $form): Form
+{
+    return $form
+        ->schema([
+            Forms\Components\TextInput::make('asset.name')
+                ->label('Asset')
+                ->disabled(),
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('asset.name')
-                    ->label('الأصل')
-                    ->disabled(),
+            Forms\Components\TextInput::make('requestedBy.name')
+                ->label('Requested By')
+                ->disabled(),
 
-              Forms\Components\TextInput::make('requestedBy.name')
-    ->label('مقدم الطلب')
-    ->disabled(),
+            Forms\Components\Toggle::make('is_confirmed')
+                ->label('Confirmed?')
+                ->required(),
+        ]);
+}
 
-                Forms\Components\Toggle::make('is_confirmed')
-                    ->label('تم التأكيد؟')
-                    ->required(),
-            ]);
-    }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('asset.name')
-                    ->label('الأصل')
-                    ->searchable()
-                    ->sortable(),
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('asset.name')
+                ->label('Asset')
+                ->searchable()
+                ->sortable(),
 
-               Tables\Columns\TextColumn::make('requestedBy.name')
-    ->label('مقدم الطلب')
-    ->sortable(),
+            Tables\Columns\TextColumn::make('requestedBy.name')
+                ->label('Requested By')
+                ->sortable(),
 
-                Tables\Columns\BooleanColumn::make('is_confirmed')
-                    ->label('تم التأكيد')
-                    ->sortable(),
+            Tables\Columns\BooleanColumn::make('is_confirmed')
+                ->label('Confirmed')
+                ->sortable(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الطلب')
-                    ->dateTime()
-                    ->sortable(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
-    }
+            Tables\Columns\TextColumn::make('created_at')
+                ->label('Request Date')
+                ->dateTime()
+                ->sortable(),
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\DeleteBulkAction::make(),
+        ]);
+}
 
     public static function getRelations(): array
     {

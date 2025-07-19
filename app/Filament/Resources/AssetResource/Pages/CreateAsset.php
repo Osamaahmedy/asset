@@ -13,7 +13,7 @@ class CreateAsset extends CreateRecord
     protected function afterCreate(): void
     {
         ActivityLog::create([
-            'action' => 'تم إنشاء أصل',
+            'action' => 'Asset created',
             'model_type' => $this->record::class,
             'model_id' => $this->record->id,
         ]);

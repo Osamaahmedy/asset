@@ -34,10 +34,10 @@ protected static function booted()
 
                 // تسجيل العملية في سجل الأنشطة
                 \App\Models\ActivityLog::create([
-                    'action' => 'تم حذف أصل',
+                    'action' => 'Asset deleted',
                     'model_type' => \App\Models\Asset::class,
                     'model_id' => $asset->id,
-                    'description' => "اسم الأصل: {$assetName}",
+                    'description' => "Asset Name: {$assetName}",
                 ]);
 
                 // حذف الأصل

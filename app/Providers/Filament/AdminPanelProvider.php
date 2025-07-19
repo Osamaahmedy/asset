@@ -37,6 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandName('Asest')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
@@ -49,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+               // Widgets\FilamentInfoWidget::class,
             ])
             ->plugins([
                 // SpatieLaravelMediaLibraryPlugin::make(), // فعّله إذا كنت تستخدمه
@@ -92,7 +93,7 @@ public function boot(): void
 
         Filament::registerNavigationItems([
             NavigationItem::make()
-                ->label('الإشعارات')
+                ->label('Notifications')
                 ->icon('heroicon-o-bell')
                 ->url(route('filament.admin.resources.notifications.index'))
                 ->badge($unreadCount),

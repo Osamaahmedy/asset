@@ -24,12 +24,13 @@ class MaintenanceResource extends Resource
     protected static ?string $model = Maintenance::class;
 
 
-    // اسم يظهر في القائمة الجانبية
-    protected static ?string $navigationLabel = 'الصيانات';
-    protected static ?string $pluralModelLabel = 'الصيانة';
+   // Name displayed in the sidebar
+protected static ?string $navigationLabel = 'Maintenances';
+protected static ?string $pluralModelLabel = 'Maintenance';
 
-    // ضعها ضمن مجموعة الأصول
-    protected static ?string $navigationGroup = 'إدارة الأصول';
+// Put it under the Assets group
+protected static ?string $navigationGroup = 'Asset Management';
+
 
     // اختر أيقونة مناسبة، مثلاً "wrench" أو "tool"
     protected static ?string $navigationIcon = 'heroicon-o-wrench';
@@ -38,34 +39,35 @@ class MaintenanceResource extends Resource
     {
         return $form->schema([
             Select::make('asset_id')
-                ->label('الأصل')
+                ->label('asset')
                 ->relationship('asset', 'name')
                 ->searchable()
                 ->required(),
 
             DatePicker::make('maintenance_date')->required(),
 
-            Textarea::make('note')->label('ملاحظات'),
+            Textarea::make('note')->label('note'),
 
             Select::make('status')
-                ->options([
-                    'تمت الصيانة' => 'تمت الصيانة',
-                    'مؤجلة' => 'مؤجلة',
-                    'قيد الانتظار' => 'قيد الانتظار',
-                ])
-                ->required()
-                ->default('تمت الصيانة'),
+    ->options([
+        'Maintenance Completed' => 'Maintenance Completed',
+        'Postponed' => 'Postponed',
+        'Pending' => 'Pending',
+    ])
+    ->required()
+    ->default('Maintenance Completed'),
+
 
             SpatieMediaLibraryFileUpload::make('images')
                 ->collection('images')
-                ->label('صورة الصيانة'),
+                ->label('Maintenance Image'),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('asset.name')->label('الأصل')->searchable(),
+            TextColumn::make('asset.name')->label('asset')->searchable(),
             TextColumn::make('maintenance_date')->date(),
             TextColumn::make('status'),
             TextColumn::make('note')->limit(30),

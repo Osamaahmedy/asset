@@ -35,12 +35,12 @@ class Asset extends Model implements HasMedia
 static::saved(function ($asset) {
     $status = $asset->maintenance_status;
 
-    // إذا ليست جيدة، نسجل إشعار
-    if ($status !== '✅ جيدة') {
+    // If the status is not good, create a notification
+    if ($status !== '✅ Good') {
         Notification::create([
             'asset_id' => $asset->id,
             'status' => $status,
-            'message' => "تنبيه صيانة: الأصل {$asset->name} حالته {$status}",
+            'message' => "Maintenance Alert: Asset {$asset->name} status is {$status}",
         ]);
     }
 });
@@ -51,8 +51,8 @@ static::saved(function ($asset) {
 
     static::deleting(function ($asset) {
     if (!$asset->deletionConfirmation || !$asset->deletionConfirmation->is_confirmed) {
-        // بدل رفع Exception فقط أوقف الحذف
-        return false; // إلغاء عملية الحذف بهدوء بدون Exception
+
+        return false;
     }
 
 
@@ -79,24 +79,25 @@ static::saved(function ($asset) {
 public function getMaintenanceStatusAttribute(): string
 {
     if (!$this->last_maintenance_date || !$this->maintenance_cycle_months) {
-        return '❓ غير معروف';
+        return '❓ Unknown';
     }
 
-$nextDueDate = \Carbon\Carbon::parse($this->last_maintenance_date)->addMonths((int) $this->maintenance_cycle_months);
+    $nextDueDate = \Carbon\Carbon::parse($this->last_maintenance_date)->addMonths((int) $this->maintenance_cycle_months);
     $daysRemaining = now()->diffInDays($nextDueDate, false);
 
     if ($daysRemaining < 0) {
-        return '❌ متأخرة';
+        return '❌ Overdue';
     } elseif ($daysRemaining <= 7) {
-        return '⚠️ أقل من أسبوع';
+        return '⚠️ Less than a week';
     } elseif ($daysRemaining <= 30) {
-        return '⚠️ أقل من شهر';
+        return '⚠️ Less than a month';
     } elseif ($daysRemaining <= 60) {
-        return '🔔 أقل من شهرين';
+        return '🔔 Less than two months';
     }
 
-    return '✅ جيدة';
+    return '✅ Good';
 }
+
 
     /**
      * Relationship: belongs to department

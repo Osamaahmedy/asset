@@ -20,31 +20,36 @@ class RoleResource extends Resource
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shield-check';
-    protected static ?string $navigationLabel = 'الأدوار';
-    protected static ?string $pluralLabel = 'الأدوار';
-    protected static ?string $modelLabel = 'دور';
-
+    protected static ?string $navigationLabel = 'Roles';
+    protected static ?string $pluralLabel = 'Roles';
+    protected static ?string $modelLabel = 'Role';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->label('اسم الدور'),
+            TextInput::make('name')
+                ->required()
+                ->label('Role Name'),
+
             MultiSelect::make('permissions')
                 ->relationship('permissions', 'name')
-                ->label('الصلاحيات')
-                ->preload()  // يحمّل كل الصلاحيات دفعة واحدة لتسهيل الاختيار
+                ->label('Permissions')
+                ->preload() // Preload all permissions for easier selection
                 ->required(),
         ]);
     }
-
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')->sortable()->searchable(),
+                TextColumn::make('name')
+                    ->label('Name')
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('permissions.name')
-                    ->label('الصلاحيات')
+                    ->label('Permissions')
                     ->badge()
                     ->separator(', '),
             ]);
@@ -58,6 +63,7 @@ class RoleResource extends Resource
             'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('view roles') ?? false;
@@ -77,5 +83,4 @@ class RoleResource extends Resource
     {
         return auth()->user()?->can('delete roles') ?? false;
     }
-
 }

@@ -27,102 +27,101 @@ class AssetResource extends Resource
 {
     protected static ?string $model = Asset::class;
 
-   // اسم يعرض في القائمة الجانبية
-protected static ?string $navigationLabel = 'الأصول';
-    protected static ?string $pluralModelLabel = 'الأصول';
+   // Name displayed in the sidebar
+protected static ?string $navigationLabel = 'Assets';
 
-// عنوان الصفحة في التصفح (اختياري)
-protected static ?string $navigationGroup = 'إدارة الأصول'; // إذا حابب تجمع الموارد تحت مجموعة
+protected static ?string $pluralModelLabel = 'Assets';
+
+// Optional page group title in navigation
+protected static ?string $navigationGroup = 'Asset Management'; // To group resources under one heading
 
 // الأيقونة (شوف الخطوة 2)
 protected static ?string $navigationIcon = 'heroicon-o-cube';
-    public static function form(Form $form): Form
-    {
-        return $form->schema([
-            TextInput::make('name')->required(),
+   public static function form(Form $form): Form
+{
+    return $form->schema([
+        TextInput::make('name')->required(),
 
-            DatePicker::make('purchase_date')
-                ->label('تاريخ الشراء')
-                ->required(),
+        DatePicker::make('purchase_date')
+            ->label('Purchase Date')
+            ->required(),
 
-            DatePicker::make('maintenance_due_date')
-                ->label('تاريخ الصيانة الأولى')
-                ->required(),
+        DatePicker::make('maintenance_due_date')
+            ->label('First Maintenance Date')
+            ->required(),
 
-            DatePicker::make('last_maintenance_date')
-                ->label('تاريخ آخر صيانة')
-                ->required(),
+        DatePicker::make('last_maintenance_date')
+            ->label('Last Maintenance Date')
+            ->required(),
 
-          TextInput::make('maintenance_cycle_months')
-    ->label('دورة الصيانة (بالأشهر)')
-    ->numeric()
-    ->required()
-    ->default(3),
+        TextInput::make('maintenance_cycle_months')
+            ->label('Maintenance Cycle (in months)')
+            ->numeric()
+            ->required()
+            ->default(3),
 
+        TextInput::make('price')
+            ->label('Price')
+            ->numeric()
+            ->required(),
 
-            TextInput::make('price')
-                ->label('السعر')
-                ->numeric()
-                ->required(),
+        TextInput::make('vendor')
+            ->label('Vendor')
+            ->required(),
 
-            TextInput::make('vendor')
-                ->label('المورد')
-                ->required(),
+        Select::make('department_id')
+            ->label('Department')
+            ->required()
+            ->options(function () {
+                return auth()->user()
+                    ->departments()
+                    ->pluck('departments.name', 'departments.id')
+                    ->toArray();
+            })
+            ->searchable(false),
 
-      Select::make('department_id')
-    ->label('القسم')
-    ->required()
-    ->options(function () {
-        return auth()->user()
-            ->departments()
-            ->pluck('departments.name', 'departments.id')
-            ->toArray();
-    })
-    ->searchable(false),
+        SpatieMediaLibraryFileUpload::make('image')
+            ->collection('image')
+            ->label('Image'),
 
-
-            SpatieMediaLibraryFileUpload::make('image')
-                ->collection('image')
-                ->label('صورة'),
-
-            SpatieMediaLibraryFileUpload::make('document')
-                ->collection('document')
-                ->label('مستند'),
-        ]);
-    }
+        SpatieMediaLibraryFileUpload::make('document')
+            ->collection('document')
+            ->label('Document'),
+    ]);
+}
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('name')->searchable(),
-                TextColumn::make('serial_number')->label('الرقم التسلسلي')->copyable(),
+                TextColumn::make('serial_number')->label('Serial Number')->copyable(),
                 TextColumn::make('vendor'),
                 TextColumn::make('price')->money('USD'),
                 BadgeColumn::make('maintenance_status')
-                    ->label('حالة الصيانة')
+                    ->label('Maintenance Status')
                     ->colors([
-                        'danger' => fn ($state): bool => $state === '❌ متأخرة',
+                        'danger' => fn ($state): bool => $state === '❌ Overdue',
                         'warning' => fn ($state): bool => str_contains($state, '⚠️'),
-                        'success' => fn ($state): bool => $state === '✅ جيدة',
+                        'success' => fn ($state): bool => $state === '✅ Good',
                     ]),
-
 BadgeColumn::make('deletion_status')
-    ->label('حالة الحذف')
+    ->label('Deletion Status')
     ->getStateUsing(function ($record) {
-        return $record->deletionConfirmation ? 'بانتظار التأكيد' : 'لا يوجد';
+        return $record->deletionConfirmation ? 'Pending Confirmation' : 'None';
     })
     ->colors([
-        'warning' => 'بانتظار التأكيد',
-        'success' => 'لا يوجد',
+        'warning' => 'Pending Confirmation',
+        'success' => 'None',
     ]),
-                TextColumn::make('department.name')->label('القسم'),
-                ImageColumn::make('image')->label('الصورة')->circular(),
+
+                TextColumn::make('department.name')->label('Department'),
+               // ImageColumn::make('image')->label('image')->circular(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
 Tables\Actions\Action::make('requestDeletion')
-    ->label('طلب حذف')
+    ->label('Deletion request')
     ->icon('heroicon-o-exclamation-circle')
     ->color('danger')
     ->requiresConfirmation()

@@ -16,55 +16,55 @@ use Illuminate\Database\Eloquent\Model;
 class ActivityLogResource extends Resource
 {
     protected static ?string $model = ActivityLog::class;
-    protected static ?string $navigationLabel = 'سجل العمليات';
+    protected static ?string $navigationLabel = 'Activity Logs';
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                TextColumn::make('description')
-                    ->label('تفاصيل إضافية')
-                    ->wrap()
-                    ->searchable(),
+   public static function table(Table $table): Table
+{
+    return $table
+        ->columns([
+            TextColumn::make('description')
+                ->label('Additional Details')
+                ->wrap()
+                ->searchable(),
 
-                TextColumn::make('action')
-                    ->label('نوع العملية')
-                    ->sortable()
-                    ->searchable(),
+            TextColumn::make('action')
+                ->label('Action Type')
+                ->sortable()
+                ->searchable(),
 
-                TextColumn::make('model_type')
-                    ->label('نوع النموذج')
-                    ->formatStateUsing(fn($state) => class_basename($state))
-                    ->sortable(),
+            TextColumn::make('model_type')
+                ->label('Model Type')
+                ->formatStateUsing(fn($state) => class_basename($state))
+                ->sortable(),
 
-                TextColumn::make('model_id')
-                    ->label('معرف النموذج'),
+            TextColumn::make('model_id')
+                ->label('Model ID'),
 
-                TextColumn::make('created_at')
-                    ->label('تاريخ العملية')
-                    ->dateTime()
-                    ->sortable(),
+            TextColumn::make('created_at')
+                ->label('Action Date')
+                ->dateTime()
+                ->sortable(),
 
-                TextColumn::make('modelName')
-                    ->label('اسم الأصل أو الصيانة')
-                    ->getStateUsing(function (ActivityLog $record) {
-                        $model = $record->model;
+            TextColumn::make('modelName')
+                ->label('Asset or Maintenance Name')
+                ->getStateUsing(function (ActivityLog $record) {
+                    $model = $record->model;
 
-                        if ($model instanceof Asset) {
-                            return $model->name;
-                        }
+                    if ($model instanceof Asset) {
+                        return $model->name;
+                    }
 
-                        if ($model instanceof Maintenance) {
-                            return 'صيانة الأصل: ' . ($model->asset->name ?? 'غير معروف');
-                        }
+                    if ($model instanceof Maintenance) {
+                        return 'Asset Maintenance: ' . ($model->asset->name ?? 'Unknown');
+                    }
 
-                        return $record->description ?? 'غير متوفر';
-                    }),
-            ])
-            ->defaultSort('created_at', 'desc');
-    }
+                    return $record->description ?? 'Unavailable';
+                }),
+        ])
+        ->defaultSort('created_at', 'desc');
+}
 
     public static function getPages(): array
     {

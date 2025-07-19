@@ -9,13 +9,11 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Spatie\Permission\Models\Role;
 use Illuminate\Database\Eloquent\Model;
-                use Filament\Forms\Components\Select;
-
 
 class UserResource extends Resource
 {
@@ -26,36 +24,63 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->label('الاسم'),
-            TextInput::make('email')->email()->required()->label('البريد الإلكتروني'),
+            TextInput::make('name')
+                ->required()
+                ->label('Name'),
+
+            TextInput::make('email')
+                ->email()
+                ->required()
+                ->label('Email'),
+
             TextInput::make('password')
                 ->password()
-                ->label('كلمة المرور')
+                ->label('Password')
                 ->dehydrateStateUsing(fn ($state) => $state ? bcrypt($state) : null)
                 ->dehydrated(fn ($state) => filled($state))
                 ->required(fn (string $context) => $context === 'create'),
-            MultiSelect::make('roles') // حقل الأدوار
-                ->relationship('roles', 'name') // يرتبط بعلاقة roles في موديل User
-                ->preload() // يحمل الخيارات مسبقًا
-                ->label('الأدوار'),
-                 Select::make('departments')
-            ->multiple()
-            ->relationship('departments', 'name')
-            ->label('الأقسام'),
+
+            MultiSelect::make('roles')
+                ->relationship('roles', 'name')
+                ->preload()
+                ->label('Roles'),
+
+            Select::make('departments')
+                ->multiple()
+                ->relationship('departments', 'name')
+                ->label('Departments'),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('id')->label('#')->sortable(),
-            TextColumn::make('name')->label('الاسم')->searchable()->sortable(),
-            TextColumn::make('email')->label('البريد الإلكتروني')->searchable()->sortable(),
-            TextColumn::make('created_at')->label('تاريخ الإنشاء')->date()->sortable(),
-            TextColumn::make('roles.name')->label('الأدوار')->sortable(), // عرض الأدوار في الجدول
-        ])->actions([
-            Tables\Actions\EditAction::make()->label('تعديل'),
-            Tables\Actions\ViewAction::make()->label('عرض'),
+            TextColumn::make('id')
+                ->label('#')
+                ->sortable(),
+
+            TextColumn::make('name')
+                ->label('Name')
+                ->searchable()
+                ->sortable(),
+
+            TextColumn::make('email')
+                ->label('Email')
+                ->searchable()
+                ->sortable(),
+
+            TextColumn::make('created_at')
+                ->label('Created At')
+                ->date()
+                ->sortable(),
+
+            TextColumn::make('roles.name')
+                ->label('Roles')
+                ->sortable(),
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make()->label('Edit'),
+            Tables\Actions\ViewAction::make()->label('View'),
         ]);
     }
 
@@ -68,6 +93,7 @@ class UserResource extends Resource
             'view' => Pages\ViewUser::route('/{record}'),
         ];
     }
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('view users') ?? false;
@@ -87,5 +113,4 @@ class UserResource extends Resource
     {
         return auth()->user()?->can('delete users') ?? false;
     }
-
 }
