@@ -8,37 +8,44 @@ use Filament\Widgets\ChartWidget;
 
 class AssetStatusChart extends ChartWidget
 {
-    protected static ?string $heading = '📊 تقارير حالة الصيانة حسب الحالة والقسم والشهر';
+    protected static ?string $heading = '📊 Maintenance Overview by Status, Department, and Month';
     protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 'full'; // يجعل الشارت كبير
+    protected int|string|array $columnSpan = 'full';
 
     protected function getData(): array
     {
-        // 1. توزيع حسب الحالة
-        $statusCounts = [
-            '✅ جيدة' => 0,
-            '🔔 أقل من شهرين' => 0,
-            '⚠️ أقل من شهر' => 0,
-            '⚠️ أقل من أسبوع' => 0,
-            '❌ متأخرة' => 0,
-            '❓ غير معروف' => 0,
+        // Labels and colors for status
+        $statusLabels = [
+            '✅ Good' => '#16a34a',
+            '🔔 < 2 Months' => '#84cc16',
+            '⚠️ < 1 Month' => '#facc15',
+            '⚠️ < 1 Week' => '#f97316',
+            '❌ Overdue' => '#ef4444',
+            '❓ Unknown' => '#9ca3af',
         ];
 
-        // 2. توزيع حسب القسم
+        $statusCounts = array_fill_keys(array_keys($statusLabels), 0);
         $departmentCounts = [];
-
-        // 3. توزيع شهري (يناير - ديسمبر)
-        $monthlyCounts = array_fill(1, 12, 0); // [1 => 0, 2 => 0, ..., 12 => 0]
+        $monthlyCounts = array_fill(1, 12, 0);
 
         foreach (Asset::with('department')->get() as $asset) {
-            $status = $asset->maintenance_status;
-            $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1;
+            // Map Arabic status to English
+            $status = match ($asset->maintenance_status) {
+                '✅ جيدة' => '✅ Good',
+                '🔔 أقل من شهرين' => '🔔 < 2 Months',
+                '⚠️ أقل من شهر' => '⚠️ < 1 Month',
+                '⚠️ أقل من أسبوع' => '⚠️ < 1 Week',
+                '❌ متأخرة' => '❌ Overdue',
+                default => '❓ Unknown',
+            };
 
-            // القسم
-            $dept = $asset->department?->name ?? 'غير محدد';
-            $departmentCounts[$dept] = ($departmentCounts[$dept] ?? 0) + 1;
+            $statusCounts[$status]++;
 
-            // الشهر
+            // Department count
+            $department = $asset->department?->name ?? 'Undefined';
+            $departmentCounts[$department] = ($departmentCounts[$department] ?? 0) + 1;
+
+            // Monthly count
             if ($asset->last_maintenance_date) {
                 $month = Carbon::parse($asset->last_maintenance_date)->month;
                 $monthlyCounts[$month]++;
@@ -47,44 +54,51 @@ class AssetStatusChart extends ChartWidget
 
         return [
             'datasets' => [
+                // Status bar
                 [
-                    'label' => 'الحالة',
+                    'label' => 'By Status',
                     'data' => array_values($statusCounts),
-                    'backgroundColor' => ['#16a34a', '#84cc16', '#facc15', '#f97316', '#ef4444', '#9ca3af'],
-                    'borderRadius' => 10,
+                    'backgroundColor' => array_values($statusLabels),
+                    'borderRadius' => 8,
                     'barThickness' => 30,
                     'yAxisID' => 'y1',
                 ],
+                // Department bar
                 [
-                    'label' => 'حسب القسم',
+                    'label' => 'By Department',
                     'data' => array_values($departmentCounts),
                     'backgroundColor' => '#0ea5e9',
                     'type' => 'bar',
+                    'borderRadius' => 8,
+                    'barThickness' => 20,
                     'yAxisID' => 'y2',
                 ],
+                // Monthly stepped line
                 [
-                    'label' => 'شهرياً',
+                    'label' => 'Monthly Overview',
                     'data' => array_values($monthlyCounts),
-                    'backgroundColor' => '#8b5cf6',
                     'type' => 'line',
+                    'stepped' => true,
                     'borderColor' => '#8b5cf6',
-                    'borderWidth' => 3,
+                    'backgroundColor' => 'transparent',
+                    'borderWidth' => 2.5,
+                    'pointRadius' => 4,
+                    'pointBackgroundColor' => '#8b5cf6',
                     'fill' => false,
-                    'tension' => 0.3,
                     'yAxisID' => 'y3',
                 ],
             ],
             'labels' => [
-                ...array_keys($statusCounts),
-                ...array_keys($departmentCounts),
-                ...array_map(fn($m) => Carbon::create()->month($m)->locale('ar')->translatedFormat('F'), range(1, 12))
+                ...array_keys($statusCounts), // Labels for statuses
+                ...array_keys($departmentCounts), // Labels for departments
+                ...array_map(fn($m) => Carbon::create()->month($m)->format('F'), range(1, 12)), // Labels for months
             ],
         ];
     }
 
     protected function getType(): string
     {
-        return 'bar'; // يمكن تغييره إلى 'line' أو 'pie' لكن bar أكثر شمولًا
+        return 'bar';
     }
 
     protected function getOptions(): ?array
@@ -96,16 +110,19 @@ class AssetStatusChart extends ChartWidget
                 'tooltip' => [
                     'enabled' => true,
                     'usePointStyle' => true,
+                    'bodyFont' => ['size' => 13],
+                    'titleFont' => ['size' => 14],
                 ],
                 'legend' => [
                     'position' => 'top',
                     'labels' => [
                         'font' => ['size' => 14],
+                        'color' => '#111827',
                     ],
                 ],
                 'title' => [
                     'display' => true,
-                    'text' => '📈 تقارير الصيانة',
+                    'text' => '📈 Maintenance Report (Live Data)',
                     'font' => [
                         'size' => 18,
                         'weight' => 'bold',
@@ -116,9 +133,11 @@ class AssetStatusChart extends ChartWidget
                 'y1' => [
                     'beginAtZero' => true,
                     'position' => 'left',
+                    'grid' => ['drawOnChartArea' => true],
                     'title' => [
                         'display' => true,
-                        'text' => 'عدد حسب الحالة',
+                        'text' => 'Status Count',
+                        'font' => ['size' => 14],
                     ],
                 ],
                 'y2' => [
@@ -127,7 +146,8 @@ class AssetStatusChart extends ChartWidget
                     'grid' => ['drawOnChartArea' => false],
                     'title' => [
                         'display' => true,
-                        'text' => 'حسب الأقسام',
+                        'text' => 'Department Count',
+                        'font' => ['size' => 14],
                     ],
                 ],
                 'y3' => [
