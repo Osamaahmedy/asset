@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Filament\Resources;
-use Illuminate\Database\Eloquent\Builder;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\NotificationResource\Pages;
 use App\Models\Notification;
 use Filament\Forms;
@@ -10,121 +11,188 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables;
-use Illuminate\Database\Eloquent\Model;
 
 class NotificationResource extends Resource
 {
     protected static ?string $model = Notification::class;
 
-   protected static ?string $navigationGroup = 'Notifications';
+    protected static ?string $navigationGroup = 'الإشعارات';
+    protected static ?string $navigationIcon = 'heroicon-o-bell';
+    protected static ?string $navigationLabel = 'الإشعارات';
+    protected static ?string $pluralModelLabel = 'الإشعارات';
+    protected static ?string $modelLabel = 'إشعار';
 
-protected static ?string $navigationIcon = 'heroicon-o-bell';
+    protected static ?int $navigationSort = 1;
 
-protected static ?string $navigationLabel = 'Notifications';
+    public static function getNavigationBadge(): ?string
+    {
+        if (!auth()->check()) return null;
 
-protected static ?string $pluralModelLabel = 'Notifications';
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
 
-protected static ?string $modelLabel = 'Notification';
+        if (empty($userDepartmentIds)) return null;
 
+        $count = static::getModel()::query()
+            ->where('is_read', false)
+            ->whereHas('asset', fn($q) => $q->whereIn('department_id', $userDepartmentIds))
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    // ── لون الكونتر ──────────────────────────────────────────────────────────
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
 
     public static function form(Form $form): Form
-{
-    return $form
-        ->schema([
-            Forms\Components\TextInput::make('message')
-                ->label('Message')
-                ->disabled()
-                ->required(),
+    {
+        return $form->schema([
+            Forms\Components\Section::make('تفاصيل الإشعار')
+                ->icon('heroicon-o-bell')
+                ->schema([
+                    Forms\Components\Textarea::make('message')
+                        ->label('نص الإشعار')
+                        ->disabled()
+                        ->rows(3)
+                        ->columnSpanFull(),
 
-            Forms\Components\TextInput::make('status')
-                ->label('Status')
-                ->disabled()
-                ->required(),
+                    Forms\Components\TextInput::make('status')
+                        ->label('الحالة')
+                        ->disabled(),
 
-            Forms\Components\Toggle::make('is_read')
-                ->label('Read?')
-                ->disabled(),
+                    Forms\Components\Toggle::make('is_read')
+                        ->label('تمت القراءة؟')
+                        ->disabled(),
+                ])
+                ->columns(2),
         ]);
-}
+    }
 
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('message')
+                    ->label('نص الإشعار')
+                    ->searchable()
+                    ->wrap()
+                    ->limit(80),
 
-   public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('message')
-                ->label('Message')
-                ->searchable()
-                ->wrap(),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('الحالة')
+                    ->sortable(),
 
-            Tables\Columns\TextColumn::make('status')
-                ->label('Status')
-                ->sortable(),
+                Tables\Columns\IconColumn::make('is_read')
+                    ->label('مقروء؟')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->sortable(),
 
-            Tables\Columns\BooleanColumn::make('is_read')
-                ->label('Read?')
-                ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('تاريخ الإشعار')
+                    ->dateTime('Y/m/d - h:i A')
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\Filter::make('unread')
+                    ->label('غير المقروءة فقط')
+                    ->query(fn($query) => $query->where('is_read', false))
+                    ->toggle(),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('markAsRead')
+                    ->label('تحديد كمقروء')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->visible(fn(Notification $record) => !$record->is_read)
+                    ->action(fn(Notification $record) => $record->update(['is_read' => true]))
+                    ->requiresConfirmation()
+                    ->modalHeading('تحديد كمقروء')
+                    ->modalDescription('هل تريد تحديد هذا الإشعار كمقروء؟')
+                    ->modalSubmitActionLabel('نعم')
+                    ->modalCancelActionLabel('إلغاء'),
 
-            Tables\Columns\TextColumn::make('created_at')
-                ->label('Notification Date')
-                ->dateTime()
-                ->sortable(),
-        ])
-        ->filters([
-            Tables\Filters\Filter::make('unread')
-                ->label('Unread Only')
-                ->query(fn ($query) => $query->where('is_read', false)),
-        ])
-        ->actions([
-            Tables\Actions\Action::make('markAsRead')
-                ->label('Mark as Read')
-                ->action(fn (Notification $record) => $record->update(['is_read' => true]))
-                ->requiresConfirmation()
-                ->icon('heroicon-o-check'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('حذف'),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkAction::make('markAllRead')
+                    ->label('تحديد الكل كمقروء')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->action(fn($records) => $records->each->update(['is_read' => true]))
+                    ->requiresConfirmation()
+                    ->modalHeading('تحديد الكل كمقروء')
+                    ->modalSubmitActionLabel('نعم، حدّد الكل')
+                    ->modalCancelActionLabel('إلغاء'),
 
-            Tables\Actions\DeleteAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkAction::make('markAllRead')
-                ->label('Mark All as Read')
-                ->action(fn ($records) => $records->each(fn ($record) => $record->update(['is_read' => true])))
-                ->icon('heroicon-o-check-circle'),
-
-            Tables\Actions\DeleteBulkAction::make(),
-        ])
-        ->defaultSort('created_at', 'desc');
-}
+                Tables\Actions\DeleteBulkAction::make()
+                    ->label('حذف المحدد'),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->emptyStateIcon('heroicon-o-bell-slash')
+            ->emptyStateHeading('لا توجد إشعارات')
+            ->emptyStateDescription('ستظهر هنا الإشعارات المتعلقة بأصولك.');
+    }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListNotifications::route('/'),
-            // لو حبيت تضيف الصفحات الإضافية مثل show أو create
         ];
     }
-public static function getEloquentQuery(): Builder
-{
-    $query = parent::getEloquentQuery();
 
-    if (!auth()->check()) {
-        return $query->whereRaw('0 = 1');
+    // ─── Query ───────────────────────────────────────────────────────────────
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (!auth()->check()) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
+
+        if (empty($userDepartmentIds)) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        return $query->whereHas('asset', function ($q) use ($userDepartmentIds) {
+            $q->whereIn('department_id', $userDepartmentIds);
+        });
     }
 
-    $userDepartmentsIds = auth()->user()->departments()->pluck('departments.id')->toArray();
+    // ─── Permissions ─────────────────────────────────────────────────────────
 
-    if (empty($userDepartmentsIds)) {
-        return $query->whereRaw('0 = 1');
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('عرض الإشعارات') ?? false;
     }
 
-    return $query->whereHas('asset', function ($q) use ($userDepartmentsIds) {
-        $q->whereIn('department_id', $userDepartmentsIds);
-    });
-}
-public static function canViewAny(): bool
-{
-    return auth()->user()?->can('view nav') ?? false;
-}
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
 
-
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->can('حذف الإشعارات') ?? false;
+    }
 }

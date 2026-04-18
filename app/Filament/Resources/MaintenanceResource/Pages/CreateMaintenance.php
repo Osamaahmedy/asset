@@ -12,11 +12,14 @@ class CreateMaintenance extends CreateRecord
 
     protected function afterCreate(): void
     {
-        ActivityLog::create([
-    'action' => 'Maintenance created',
-    'model_type' => $this->record::class,
-    'model_id' => $this->record->id,
-]);
+        $asset = $this->record->asset;
 
+        ActivityLog::create([
+            'action'          => 'Maintenance created',
+            'model_type'      => $this->record::class,
+            'model_id'        => $this->record->id,
+            'model_name'      => 'صيانة: ' . ($asset?->name ?? '—'),
+            'department_name' => $asset?->department?->name,
+        ]);
     }
 }

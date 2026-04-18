@@ -24,6 +24,7 @@ class Asset extends Model implements HasMedia
         'department_id',
         'last_maintenance_date',
         'maintenance_cycle_months',
+        'maintenance_due_date',
     ];
 
     /**

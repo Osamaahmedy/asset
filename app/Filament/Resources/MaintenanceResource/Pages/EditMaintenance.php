@@ -12,10 +12,14 @@ class EditMaintenance extends EditRecord
 
     protected function afterSave(): void
     {
+        $asset = $this->record->asset;
+
         ActivityLog::create([
-            'action' => 'Maintenance updated',
-            'model_type' => $this->record::class,
-            'model_id' => $this->record->id,
+            'action'          => 'Maintenance updated',
+            'model_type'      => $this->record::class,
+            'model_id'        => $this->record->id,
+            'model_name'      => 'صيانة: ' . ($asset?->name ?? '—'),
+            'department_name' => $asset?->department?->name,
         ]);
     }
 }

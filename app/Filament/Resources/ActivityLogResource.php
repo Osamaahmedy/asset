@@ -10,61 +10,100 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class ActivityLogResource extends Resource
 {
     protected static ?string $model = ActivityLog::class;
-    protected static ?string $navigationLabel = 'Activity Logs';
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
+    protected static ?string $navigationLabel = 'سجل الأنشطة';
+    protected static ?string $pluralModelLabel = 'سجلات الأنشطة';
+    protected static ?string $modelLabel = 'نشاط';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationGroup = 'التقارير والسجلات';
+    protected static ?int $navigationSort = 1;
 
-   public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            TextColumn::make('description')
-                ->label('Additional Details')
-                ->wrap()
-                ->searchable(),
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('model_name')
+                    ->label('اسم الأصل / الصيانة')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold')
+                    ->placeholder('— محذوف —')
+                    ->description(fn(ActivityLog $record) => $record->department_name
+                        ? 'القسم: ' . $record->department_name
+                        : null),
 
-            TextColumn::make('action')
-                ->label('Action Type')
-                ->sortable()
-                ->searchable(),
+                BadgeColumn::make('action')
+                    ->label('نوع الإجراء')
+                    ->sortable()
+                    ->searchable()
+                    ->colors([
+                        'success' => fn($state) => in_array($state, ['created', 'إنشاء']),
+                        'warning' => fn($state) => in_array($state, ['updated', 'تعديل']),
+                        'danger'  => fn($state) => in_array($state, ['deleted', 'حذف']),
+                        'info'    => fn($state) => in_array($state, ['maintenance', 'صيانة']),
+                    ])
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'created'     => '✅ إنشاء',
+                        'updated'     => '✏️ تعديل',
+                        'deleted'     => '🗑️ حذف',
+                        'maintenance' => '🔧 صيانة',
+                        default       => $state,
+                    }),
 
-            TextColumn::make('model_type')
-                ->label('Model Type')
-                ->formatStateUsing(fn($state) => class_basename($state))
-                ->sortable(),
+                BadgeColumn::make('model_type')
+                    ->label('نوع العنصر')
+                    ->sortable()
+                    ->formatStateUsing(fn($state) => match (class_basename($state)) {
+                        'Asset'       => '📦 أصل',
+                        'Maintenance' => '🔧 صيانة',
+                        default       => class_basename($state),
+                    })
+                    ->colors([
+                        'primary' => fn($state) => class_basename($state) === 'Asset',
+                        'warning' => fn($state) => class_basename($state) === 'Maintenance',
+                    ]),
 
-            TextColumn::make('model_id')
-                ->label('Model ID'),
+                TextColumn::make('description')
+                    ->label('تفاصيل إضافية')
+                    ->wrap()
+                    ->searchable()
+                    ->placeholder('—')
+                    ->toggleable(),
 
-            TextColumn::make('created_at')
-                ->label('Action Date')
-                ->dateTime()
-                ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('تاريخ الإجراء')
+                    ->dateTime('Y/m/d - h:i A')
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('action')
+                    ->label('نوع الإجراء')
+                    ->options([
+                        'created'     => 'إنشاء',
+                        'updated'     => 'تعديل',
+                        'deleted'     => 'حذف',
+                        'maintenance' => 'صيانة',
+                    ]),
 
-            TextColumn::make('modelName')
-                ->label('Asset or Maintenance Name')
-                ->getStateUsing(function (ActivityLog $record) {
-                    $model = $record->model;
-
-                    if ($model instanceof Asset) {
-                        return $model->name;
-                    }
-
-                    if ($model instanceof Maintenance) {
-                        return 'Asset Maintenance: ' . ($model->asset->name ?? 'Unknown');
-                    }
-
-                    return $record->description ?? 'Unavailable';
-                }),
-        ])
-        ->defaultSort('created_at', 'desc');
-}
+                Tables\Filters\SelectFilter::make('model_type')
+                    ->label('نوع العنصر')
+                    ->options([
+                        Asset::class       => 'أصل',
+                        Maintenance::class => 'صيانة',
+                    ]),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->emptyStateIcon('heroicon-o-clipboard-document')
+            ->emptyStateHeading('لا توجد سجلات')
+            ->emptyStateDescription('ستظهر هنا جميع الأنشطة المتعلقة بأصولك وصياناتها.');
+    }
 
     public static function getPages(): array
     {
@@ -73,54 +112,80 @@ class ActivityLogResource extends Resource
         ];
     }
 
+    // ─── Permissions ─────────────────────────────────────────────────────────
+
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view activ') ?? false;
+        return auth()->user()?->can('عرض سجل الأنشطة') ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->can('create activ') ?? false;
+        return false; // السجلات تُنشأ تلقائياً
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()?->can('update activ') ?? false;
+        return false; // لا يُسمح بالتعديل
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()?->can('delete activ') ?? false;
+        return false;
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
+    // ─── Query ───────────────────────────────────────────────────────────────
 
-        if (!auth()->check()) {
-            return $query->whereRaw('0 = 1');
-        }
+   public static function getEloquentQuery(): Builder
+{
+    $query = parent::getEloquentQuery();
 
-        $userDepartmentsIds = auth()->user()->departments()->pluck('departments.id')->toArray();
+    if (!auth()->check()) {
+        return $query->whereRaw('0 = 1');
+    }
 
-        if (empty($userDepartmentsIds)) {
-            return $query->whereRaw('0 = 1');
-        }
+    $userDepartmentNames = auth()->user()
+        ->departments()
+        ->pluck('departments.name')
+        ->toArray();
 
-        return $query->where(function ($q) use ($userDepartmentsIds) {
-            // سجلات الأصول حتى لو الأصل محذوف (بدون تحقق من وجوده)
-            $q->where('model_type', Asset::class);
+    if (empty($userDepartmentNames)) {
+        return $query->whereRaw('0 = 1');
+    }
 
-            // سجلات الصيانة التي ترتبط بأصول في أقسام المستخدم
-            $q->orWhere(function ($sub) use ($userDepartmentsIds) {
-                $sub->where('model_type', Maintenance::class)
-                    ->whereIn('model_id', function ($subQuery) use ($userDepartmentsIds) {
-                        $subQuery->select('maintenances.id')
-                            ->from('maintenances')
-                            ->join('assets', 'maintenances.asset_id', '=', 'assets.id')
-                            ->whereIn('assets.department_id', $userDepartmentsIds);
-                    });
-            });
+    return $query->where(function ($q) use ($userDepartmentNames) {
+
+        // ── سجلات محفوظة مع department_name (الطريقة الجديدة) ──────────────
+        $q->whereIn('department_name', $userDepartmentNames);
+
+        // ── سجلات قديمة قبل الـ migration (بدون department_name) ───────────
+        // نعرضها عبر join مع الأصول الموجودة حالياً
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
+
+        $q->orWhere(function ($sub) use ($userDepartmentIds) {
+            $sub->whereNull('department_name')
+                ->where(function ($inner) use ($userDepartmentIds) {
+
+                    // أصول موجودة
+                    $inner->where('model_type', \App\Models\Asset::class)
+                        ->whereIn('model_id', function ($i) use ($userDepartmentIds) {
+                            $i->select('id')->from('assets')
+                              ->whereIn('department_id', $userDepartmentIds);
+                        });
+
+                    // صيانة موجودة
+                    $inner->orWhere('model_type', \App\Models\Maintenance::class)
+                        ->whereIn('model_id', function ($i) use ($userDepartmentIds) {
+                            $i->select('maintenances.id')->from('maintenances')
+                              ->join('assets', 'maintenances.asset_id', '=', 'assets.id')
+                              ->whereIn('assets.department_id', $userDepartmentIds);
+                        });
+                });
         });
-    }
+    });
+}
+
 }

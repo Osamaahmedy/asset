@@ -13,9 +13,11 @@ class EditAsset extends EditRecord
     protected function afterSave(): void
     {
         ActivityLog::create([
-            'action' => 'Asset updated',
-            'model_type' => $this->record::class,
-            'model_id' => $this->record->id,
+            'action'          => 'Asset updated',
+            'model_type'      => $this->record::class,
+            'model_id'        => $this->record->id,
+            'model_name'      => $this->record->name,
+            'department_name' => $this->record->department?->name,
         ]);
     }
 }

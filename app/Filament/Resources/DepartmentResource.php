@@ -11,81 +11,120 @@ use Filament\Tables\Table;
 use Filament\Tables;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
-    use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 class DepartmentResource extends Resource
 {
-   // Group (dropdown) inside "Assets"
-protected static ?string $navigationGroup = 'Asset Management'; // To group resources under one heading
+    protected static ?string $model = Department::class;
 
-// Name displayed in the sidebar instead of the model name
-protected static ?string $navigationLabel = 'Departments';
-protected static ?string $pluralModelLabel = 'Departments';
+    protected static ?string $navigationGroup   = 'إدارة الأصول';
+    protected static ?string $navigationLabel   = 'الأقسام';
+    protected static ?string $pluralModelLabel  = 'الأقسام';
+    protected static ?string $modelLabel        = 'قسم';
+    protected static ?string $navigationIcon    = 'heroicon-o-building-office-2';
+    protected static ?int    $navigationSort    = 3;
 
-    // أيقونة صحيحة من heroicons
-    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
-     public static function form(Form $form): Form
+    public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->unique(ignoreRecord:true),
+            Forms\Components\Section::make('معلومات القسم')
+                ->icon('heroicon-o-building-office-2')
+                ->schema([
+                    TextInput::make('name')
+                        ->label('اسم القسم')
+                        ->required()
+                        ->unique(ignoreRecord: true)
+                        ->maxLength(255)
+                        ->placeholder('مثال: قسم تقنية المعلومات'),
+                ]),
         ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            TextColumn::make('name')->sortable()->searchable(),
-            TextColumn::make('created_at')->dateTime(),
-        ]);
+        return $table
+            ->columns([
+                TextColumn::make('name')
+                    ->label('اسم القسم')
+                    ->sortable()
+                    ->searchable()
+                    ->weight('bold'),
+
+                TextColumn::make('assets_count')
+                    ->label('عدد الأصول')
+                    ->counts('assets')
+                    ->badge()
+                    ->color('primary'),
+
+                TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
+                    ->dateTime('Y/m/d - h:i A')
+                    ->sortable(),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->actions([
+                Tables\Actions\EditAction::make()->label('تعديل'),
+                Tables\Actions\DeleteAction::make()->label('حذف'),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+            ])
+            ->emptyStateIcon('heroicon-o-building-office-2')
+            ->emptyStateHeading('لا توجد أقسام')
+            ->emptyStateDescription('ابدأ بإضافة قسم جديد.');
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDepartments::route('/'),
+            'index'  => Pages\ListDepartments::route('/'),
             'create' => Pages\CreateDepartment::route('/create'),
-            'edit' => Pages\EditDepartment::route('/{record}/edit'),
+            'edit'   => Pages\EditDepartment::route('/{record}/edit'),
         ];
     }
 
-public static function canViewAny(): bool
-{
-    return auth()->user()?->can('view dept') ?? false;
-}
+    // ─── Permissions ─────────────────────────────────────────────────────────
 
-public static function canCreate(): bool
-{
-    return auth()->user()?->can('create dept') ?? false;
-}
-
-public static function canEdit(Model $record): bool
-{
-    return auth()->user()?->can('update dept') ?? false;
-}
-
-public static function canDelete(Model $record): bool
-{
-    return auth()->user()?->can('delete dept') ?? false;
-}
-public static function getEloquentQuery(): Builder
-{
-    $query = parent::getEloquentQuery();
-
-    if (!auth()->check()) {
-        return $query->whereRaw('0 = 1');
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('عرض الأقسام') ?? false;
     }
 
-    $userDepartmentsIds = auth()->user()->departments()->pluck('departments.id')->toArray();
-
-    if (empty($userDepartmentsIds)) {
-        return $query->whereRaw('0 = 1');
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('إنشاء قسم') ?? false;
     }
 
-    // هنا العمود الصحيح هو id وليس department_id
-    return $query->whereIn('id', $userDepartmentsIds);
-}
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()?->can('تعديل الأقسام') ?? false;
+    }
 
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->can('حذف الأقسام') ?? false;
+    }
 
+    // ─── Query ───────────────────────────────────────────────────────────────
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (!auth()->check()) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
+
+        if (empty($userDepartmentIds)) {
+            return $query->whereRaw('0 = 1');
+        }
+
+        return $query->whereIn('id', $userDepartmentIds);
+    }
 }

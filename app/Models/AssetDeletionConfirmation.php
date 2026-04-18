@@ -9,7 +9,7 @@ class AssetDeletionConfirmation extends Model
 {
     protected $fillable = [
         'asset_id',
-            'requested_by',
+        'requested_by',
         'is_confirmed',
     ];
 
@@ -18,37 +18,37 @@ class AssetDeletionConfirmation extends Model
         return $this->belongsTo(Asset::class);
     }
 
+    public function requestedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
 
-public function requestedBy()
-{
-    return $this->belongsTo(\App\Models\User::class, 'requested_by');
-}
-protected static function booted()
-{
-    static::updated(function ($confirmation) {
-        if ($confirmation->is_confirmed) {
-            $asset = $confirmation->asset;
-            if ($asset) {
-                // حفظ اسم الأصل قبل الحذف
-                $assetName = $asset->name;
+    protected static function booted(): void
+    {
+        static::updated(function ($confirmation) {
+            if ($confirmation->is_confirmed) {
+                $asset = $confirmation->asset;
 
-                // تسجيل العملية في سجل الأنشطة
-                \App\Models\ActivityLog::create([
-                    'action' => 'Asset deleted',
-                    'model_type' => \App\Models\Asset::class,
-                    'model_id' => $asset->id,
-                    'description' => "Asset Name: {$assetName}",
-                ]);
+                if ($asset) {
+                    // ── احفظ البيانات قبل الحذف ──────────────────────────
+                    $assetName      = $asset->name;
+                    $departmentName = $asset->department?->name;
 
-                // حذف الأصل
-                $asset->delete();
+                    // ── سجّل النشاط مع الاسم محفوظاً ─────────────────────
+                    \App\Models\ActivityLog::create([
+                        'action'          => 'Asset deleted',
+                        'model_type'      => \App\Models\Asset::class,
+                        'model_id'        => $asset->id,
+                        'model_name'      => $assetName,
+                        'department_name' => $departmentName,
+                        'description'     => "تم حذف الأصل: {$assetName}",
+                    ]);
 
-                // حذف طلب التأكيد
-                $confirmation->delete();
+                    // ── احذف الأصل وطلب التأكيد ───────────────────────────
+                    $asset->delete();
+                    $confirmation->delete();
+                }
             }
-        }
-    });
+        });
+    }
 }
-
-}
-

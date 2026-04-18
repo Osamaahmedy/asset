@@ -13,9 +13,11 @@ class CreateAsset extends CreateRecord
     protected function afterCreate(): void
     {
         ActivityLog::create([
-            'action' => 'Asset created',
-            'model_type' => $this->record::class,
-            'model_id' => $this->record->id,
+            'action'          => 'Asset created',
+            'model_type'      => $this->record::class,
+            'model_id'        => $this->record->id,
+            'model_name'      => $this->record->name,
+            'department_name' => $this->record->department?->name,
         ]);
     }
 }

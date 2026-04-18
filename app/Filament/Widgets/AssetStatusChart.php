@@ -8,90 +8,111 @@ use Filament\Widgets\ChartWidget;
 
 class AssetStatusChart extends ChartWidget
 {
-    protected static ?string $heading = '📊 Maintenance Overview by Status, Department, and Month';
+    protected static ?string $heading = 'نظرة عامة على الصيانة حسب الحالة والقسم والشهر';
     protected static ?int $sort = 1;
     protected int|string|array $columnSpan = 'full';
 
+    // ── صلاحية العرض ─────────────────────────────────────────────────────────
+    ////public static function canView(): bool
+    //{
+     //   return auth()->user()?->can('عرض إحصائيات الصيانة') ?? false;
+    //}
+
     protected function getData(): array
     {
-        // Labels and colors for status
         $statusLabels = [
-            '✅ Good' => '#16a34a',
-            '🔔 < 2 Months' => '#84cc16',
-            '⚠️ < 1 Month' => '#facc15',
-            '⚠️ < 1 Week' => '#f97316',
-            '❌ Overdue' => '#ef4444',
-            '❓ Unknown' => '#9ca3af',
+            '✅ جيدة'            => '#16a34a',
+            '🔔 أقل من شهرين'   => '#84cc16',
+            '⚠️ أقل من شهر'    => '#facc15',
+            '⚠️ أقل من أسبوع'  => '#f97316',
+            '❌ متأخرة'          => '#ef4444',
+            '❓ غير معروف'       => '#9ca3af',
         ];
 
-        $statusCounts = array_fill_keys(array_keys($statusLabels), 0);
-        $departmentCounts = [];
-        $monthlyCounts = array_fill(1, 12, 0);
+        // ── فلتر حسب أقسام المستخدم ──────────────────────────────────────────
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
 
-        foreach (Asset::with('department')->get() as $asset) {
-            // Map Arabic status to English
+        $assetsQuery = Asset::with('department');
+
+        if (!empty($userDepartmentIds)) {
+            $assetsQuery->whereIn('department_id', $userDepartmentIds);
+        }
+
+        $statusCounts     = array_fill_keys(array_keys($statusLabels), 0);
+        $departmentCounts = [];
+        $monthlyCounts    = array_fill(1, 12, 0);
+
+        foreach ($assetsQuery->get() as $asset) {
             $status = match ($asset->maintenance_status) {
-                '✅ جيدة' => '✅ Good',
-                '🔔 أقل من شهرين' => '🔔 < 2 Months',
-                '⚠️ أقل من شهر' => '⚠️ < 1 Month',
-                '⚠️ أقل من أسبوع' => '⚠️ < 1 Week',
-                '❌ متأخرة' => '❌ Overdue',
-                default => '❓ Unknown',
+                '✅ Good'        => '✅ جيدة',
+                '🔔 < 2 Months' => '🔔 أقل من شهرين',
+                '⚠️ < 1 Month'  => '⚠️ أقل من شهر',
+                '⚠️ < 1 Week'   => '⚠️ أقل من أسبوع',
+                '❌ Overdue'     => '❌ متأخرة',
+                default          => $asset->maintenance_status
+                    ?? '❓ غير معروف',
             };
 
-            $statusCounts[$status]++;
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status]++;
+            } else {
+                $statusCounts['❓ غير معروف']++;
+            }
 
-            // Department count
-            $department = $asset->department?->name ?? 'Undefined';
+            $department = $asset->department?->name ?? 'غير محدد';
             $departmentCounts[$department] = ($departmentCounts[$department] ?? 0) + 1;
 
-            // Monthly count
             if ($asset->last_maintenance_date) {
                 $month = Carbon::parse($asset->last_maintenance_date)->month;
                 $monthlyCounts[$month]++;
             }
         }
 
+        $monthLabels = array_map(
+            fn($m) => Carbon::create()->month($m)->locale('ar')->translatedFormat('F'),
+            range(1, 12)
+        );
+
         return [
             'datasets' => [
-                // Status bar
                 [
-                    'label' => 'By Status',
-                    'data' => array_values($statusCounts),
+                    'label'           => 'حسب الحالة',
+                    'data'            => array_values($statusCounts),
                     'backgroundColor' => array_values($statusLabels),
-                    'borderRadius' => 8,
-                    'barThickness' => 30,
-                    'yAxisID' => 'y1',
+                    'borderRadius'    => 8,
+                    'barThickness'    => 30,
+                    'yAxisID'         => 'y1',
                 ],
-                // Department bar
                 [
-                    'label' => 'By Department',
-                    'data' => array_values($departmentCounts),
+                    'label'           => 'حسب القسم',
+                    'data'            => array_values($departmentCounts),
                     'backgroundColor' => '#0ea5e9',
-                    'type' => 'bar',
-                    'borderRadius' => 8,
-                    'barThickness' => 20,
-                    'yAxisID' => 'y2',
+                    'type'            => 'bar',
+                    'borderRadius'    => 8,
+                    'barThickness'    => 20,
+                    'yAxisID'         => 'y2',
                 ],
-                // Monthly stepped line
                 [
-                    'label' => 'Monthly Overview',
-                    'data' => array_values($monthlyCounts),
-                    'type' => 'line',
-                    'stepped' => true,
-                    'borderColor' => '#8b5cf6',
-                    'backgroundColor' => 'transparent',
-                    'borderWidth' => 2.5,
-                    'pointRadius' => 4,
+                    'label'              => 'النظرة الشهرية',
+                    'data'               => array_values($monthlyCounts),
+                    'type'               => 'line',
+                    'stepped'            => true,
+                    'borderColor'        => '#8b5cf6',
+                    'backgroundColor'    => 'rgba(139,92,246,0.08)',
+                    'borderWidth'        => 2.5,
+                    'pointRadius'        => 4,
                     'pointBackgroundColor' => '#8b5cf6',
-                    'fill' => false,
-                    'yAxisID' => 'y3',
+                    'fill'               => true,
+                    'yAxisID'            => 'y3',
                 ],
             ],
             'labels' => [
-                ...array_keys($statusCounts), // Labels for statuses
-                ...array_keys($departmentCounts), // Labels for departments
-                ...array_map(fn($m) => Carbon::create()->month($m)->format('F'), range(1, 12)), // Labels for months
+                ...array_keys($statusCounts),
+                ...array_keys($departmentCounts),
+                ...$monthLabels,
             ],
         ];
     }
@@ -104,55 +125,53 @@ class AssetStatusChart extends ChartWidget
     protected function getOptions(): ?array
     {
         return [
-            'responsive' => true,
+            'responsive'          => true,
             'maintainAspectRatio' => false,
-            'plugins' => [
+            'plugins'             => [
                 'tooltip' => [
-                    'enabled' => true,
-                    'usePointStyle' => true,
-                    'bodyFont' => ['size' => 13],
-                    'titleFont' => ['size' => 14],
+                    'enabled'        => true,
+                    'usePointStyle'  => true,
+                    'bodyFont'       => ['size' => 13],
+                    'titleFont'      => ['size' => 14],
                 ],
                 'legend' => [
                     'position' => 'top',
-                    'labels' => [
-                        'font' => ['size' => 14],
+                    'labels'   => [
+                        'font'  => ['size' => 14],
                         'color' => '#111827',
                     ],
                 ],
                 'title' => [
                     'display' => true,
-                    'text' => '📈 Maintenance Report (Live Data)',
-                    'font' => [
-                        'size' => 18,
-                        'weight' => 'bold',
-                    ],
+                    'text'    => 'تقرير الصيانة (بيانات مباشرة)',
+                    'font'    => ['size' => 18, 'weight' => 'bold'],
+                    'color'   => '#111827',
                 ],
             ],
             'scales' => [
                 'y1' => [
                     'beginAtZero' => true,
-                    'position' => 'left',
-                    'grid' => ['drawOnChartArea' => true],
-                    'title' => [
+                    'position'    => 'left',
+                    'grid'        => ['drawOnChartArea' => true],
+                    'title'       => [
                         'display' => true,
-                        'text' => 'Status Count',
-                        'font' => ['size' => 14],
+                        'text'    => 'عدد الأصول حسب الحالة',
+                        'font'    => ['size' => 13],
                     ],
                 ],
                 'y2' => [
                     'beginAtZero' => true,
-                    'position' => 'right',
-                    'grid' => ['drawOnChartArea' => false],
-                    'title' => [
+                    'position'    => 'right',
+                    'grid'        => ['drawOnChartArea' => false],
+                    'title'       => [
                         'display' => true,
-                        'text' => 'Department Count',
-                        'font' => ['size' => 14],
+                        'text'    => 'عدد الأصول حسب القسم',
+                        'font'    => ['size' => 13],
                     ],
                 ],
                 'y3' => [
                     'beginAtZero' => true,
-                    'display' => false,
+                    'display'     => false,
                 ],
             ],
         ];

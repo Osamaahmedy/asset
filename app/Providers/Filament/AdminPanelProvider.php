@@ -37,7 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('Asest')
+            ->brandName('الأصول')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
@@ -50,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-               // Widgets\FilamentInfoWidget::class,
+               // Widgets\FilamentInfojWidget::class,
             ])
             ->plugins([
                 // SpatieLaravelMediaLibraryPlugin::make(), // فعّله إذا كنت تستخدمه
@@ -71,35 +71,6 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 
-    /**
-     * كود يتم تنفيذه عند تحميل لوحة التحكم (لإضافة الإشعارات)
-     */
-public function boot(): void
-{
-    Filament::serving(function () {
-        // التأكد من وجود مستخدم
-        if (!auth()->check()) {
-            return;
-        }
-
-        // الحصول على معرفات الأقسام التي ينتمي إليها المستخدم
-        $departmentIds = auth()->user()->departments()->pluck('departments.id')->toArray();
-
-        $unreadCount = Notification::where('is_read', false)
-    ->whereHas('asset', function ($query) use ($departmentIds) {
-        $query->whereIn('department_id', $departmentIds);
-    })
-    ->count();
-
-        Filament::registerNavigationItems([
-            NavigationItem::make()
-                ->label('Notifications')
-                ->icon('heroicon-o-bell')
-                ->url(route('filament.admin.resources.notifications.index'))
-                ->badge($unreadCount),
-        ]);
-    });
-}
 
 
 
