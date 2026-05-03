@@ -15,8 +15,7 @@ return new class extends Migration
             $table->bigInteger('radacctid', true);
             $table->string('acctsessionid', 64)->default('');
             $table->string('acctuniqueid', 32)->default('');
-            $table->string('username', 64)->default('')->index('username');
-            $table->string('realm', 64)->nullable();
+$table->index('username', 'radcheck_username_index');            $table->string('realm', 64)->nullable();
             $table->string('nasipaddress', 15)->default('');
             $table->string('nasportid', 15)->nullable();
             $table->string('nasporttype', 32)->nullable();

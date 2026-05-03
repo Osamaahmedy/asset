@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('radcheck', function (Blueprint $table) {
             $table->integer('id', true);
-            $table->string('username', 64)->default('')->index('username');
-            $table->string('attribute', 64)->default('');
+$table->index('username', 'radcheck_username_index');            $table->string('attribute', 64)->default('');
             $table->char('op', 2)->default('==');
             $table->string('value', 253)->default('');
         });
