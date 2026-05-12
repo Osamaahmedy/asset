@@ -71,17 +71,7 @@ class MaintenanceResource extends Resource
                         ->placeholder('أضف أي ملاحظات تتعلق بهذه الصيانة...'),
                 ]),
 
-            Forms\Components\Section::make('المرفقات')
-                ->icon('heroicon-o-photo')
-                ->schema([
-                    SpatieMediaLibraryFileUpload::make('images')
-                        ->collection('images')
-                        ->label('صور الصيانة')
-                        ->image()
-                        ->imageEditor()
-                        ->multiple()
-                        ->maxSize(5120),
-                ]),
+
 
         ]);
     }

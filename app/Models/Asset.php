@@ -25,6 +25,8 @@ class Asset extends Model implements HasMedia
         'last_maintenance_date',
         'maintenance_cycle_months',
         'maintenance_due_date',
+        'employee_id',
+        'asset_type_id',
     ];
 
     /**
@@ -119,5 +121,16 @@ public function getMaintenanceStatusAttribute(): string
 {
     return $this->hasOne(\App\Models\AssetDeletionConfirmation::class);
 }
-
+public function employee()
+{
+    return $this->belongsTo(Employee::class);
+}
+public function assetType()
+{
+    return $this->belongsTo(AssetType::class);
+}
+public function maintenanceRequests()
+{
+    return $this->hasMany(MaintenanceRequest::class);
+}
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 18, 2026 at 09:37 PM
+-- Generation Time: May 12, 2026 at 11:34 AM
 -- Server version: 8.0.44-0ubuntu0.24.04.2
 -- PHP Version: 8.3.6
 
@@ -189,7 +189,44 @@ INSERT INTO `activity_logs` (`id`, `action`, `model_type`, `model_id`, `model_na
 (143, 'Asset updated', 'App\\Models\\Asset', 25, 'ث', 'new', '2026-04-18 09:12:50', '2026-04-18 09:12:50', NULL),
 (144, 'Maintenance created', 'App\\Models\\Maintenance', 22, 'صيانة: ث', 'new', '2026-04-18 09:13:19', '2026-04-18 09:13:19', NULL),
 (145, 'Asset deleted', 'App\\Models\\Asset', 25, 'ث', 'new', '2026-04-18 09:16:19', '2026-04-18 09:16:19', 'تم حذف الأصل: ث'),
-(146, 'Maintenance created', 'App\\Models\\Maintenance', 23, 'صيانة: Osama Ahmed', 'new', '2026-04-18 09:27:56', '2026-04-18 09:27:56', NULL);
+(146, 'Maintenance created', 'App\\Models\\Maintenance', 23, 'صيانة: Osama Ahmed', 'new', '2026-04-18 09:27:56', '2026-04-18 09:27:56', NULL),
+(147, 'Asset updated', 'App\\Models\\Asset', 19, 'phone', 'test', '2026-05-11 05:57:54', '2026-05-11 05:57:54', NULL),
+(148, 'Asset updated', 'App\\Models\\Asset', 19, 'phone', 'test', '2026-05-11 05:58:22', '2026-05-11 05:58:22', NULL),
+(149, 'Maintenance created', 'App\\Models\\Maintenance', 24, 'صيانة: phone', 'test', '2026-05-11 05:58:51', '2026-05-11 05:58:51', NULL),
+(150, 'Maintenance updated', 'App\\Models\\Maintenance', 24, 'صيانة: phone', 'test', '2026-05-11 05:59:08', '2026-05-11 05:59:08', NULL),
+(151, 'Asset updated', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 06:23:03', '2026-05-11 06:23:03', NULL),
+(152, 'Asset updated', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 10:55:56', '2026-05-11 10:55:56', NULL),
+(153, 'Asset updated', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 11:02:40', '2026-05-11 11:02:40', NULL),
+(154, 'maintenance', 'App\\Models\\Asset', 23, 'Osama Ahmed', 'new', '2026-05-11 13:39:47', '2026-05-11 13:39:47', 'طلب صيانة جديد من: سامر — الأولوية: متوسط — عطل بالمروحة'),
+(155, 'maintenance', 'App\\Models\\Asset', 23, 'Osama Ahmed', 'new', '2026-05-11 13:41:53', '2026-05-11 13:41:53', 'اكتمل طلب الصيانة — مرسل الطلب: سامر'),
+(156, 'maintenance', 'App\\Models\\Asset', 23, 'Osama Ahmed', 'new', '2026-05-11 13:47:19', '2026-05-11 13:47:19', 'طلب صيانة جديد من: سامر — الأولوية: متوسط — عطل بالمروحة'),
+(157, 'Asset updated', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 13:47:53', '2026-05-11 13:47:53', NULL),
+(158, 'maintenance', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 13:48:02', '2026-05-11 13:48:02', 'طلب صيانة جديد من: سامر — الأولوية: متوسط — عطل بالمروحة'),
+(159, 'updated', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 14:34:11', '2026-05-11 14:34:11', 'تم تأجيل طلب الصيانة — مرسل الطلب: سامر'),
+(160, 'maintenance', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 14:34:29', '2026-05-11 14:34:29', 'اكتمل طلب الصيانة — مرسل الطلب: سامر'),
+(161, 'maintenance', 'App\\Models\\Asset', 24, 'lenove-e456', 'new', '2026-05-11 15:23:26', '2026-05-11 15:23:26', 'طلب صيانة جديد من: حسام — الأولوية: عالي — عطل بالمروحة'),
+(162, 'Asset updated', 'App\\Models\\Asset', 23, 'Osama Ahmed', 'new', '2026-05-11 15:24:48', '2026-05-11 15:24:48', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `administrations`
+--
+
+CREATE TABLE `administrations` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sector_id` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `administrations`
+--
+
+INSERT INTO `administrations` (`id`, `name`, `sector_id`, `created_at`, `updated_at`) VALUES
+(1, '5', 1, '2026-05-11 08:37:46', '2026-05-11 08:37:46');
 
 -- --------------------------------------------------------
 
@@ -228,6 +265,7 @@ CREATE TABLE `admin_branch` (
 CREATE TABLE `assets` (
   `id` bigint UNSIGNED NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `asset_type_id` bigint UNSIGNED DEFAULT NULL,
   `purchase_date` date NOT NULL,
   `maintenance_due_date` date DEFAULT NULL,
   `maintenance_cycle_months` int NOT NULL DEFAULT '3',
@@ -237,6 +275,7 @@ CREATE TABLE `assets` (
   `vendor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `serial_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `department_id` bigint UNSIGNED NOT NULL,
+  `employee_id` bigint UNSIGNED DEFAULT NULL,
   `maintenance_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'جيدة',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -246,11 +285,11 @@ CREATE TABLE `assets` (
 -- Dumping data for table `assets`
 --
 
-INSERT INTO `assets` (`id`, `name`, `purchase_date`, `maintenance_due_date`, `maintenance_cycle_months`, `last_maintenance_date`, `maintenance_interval_months`, `price`, `vendor`, `serial_number`, `department_id`, `maintenance_status`, `created_at`, `updated_at`) VALUES
-(19, 'phone', '2025-07-22', '2026-04-02', 3, '2026-04-18', 3, 5000.00, 'ali', 'ASSET-687FB77CDDE08', 2, 'جيدة', '2025-07-22 13:08:28', '2026-04-18 08:49:27'),
-(22, '7', '2026-04-18', '2026-04-21', 1, '2026-04-18', 3, 50.00, 'ء', 'ASSET-69E36EA9E3AD3', 1, 'جيدة', '2026-04-18 08:44:41', '2026-04-18 09:03:16'),
-(23, 'Osama Ahmed', '2026-04-18', '2026-07-18', 9, '2026-04-18', 3, 864.00, '5465', 'ASSET-69E36FE3069AA', 3, 'جيدة', '2026-04-18 08:49:55', '2026-04-18 09:27:56'),
-(24, 'ث', '2026-04-18', '2026-07-18', 3, '2026-04-18', 3, 5.00, 'ص', 'ASSET-69E3743262318', 3, 'جيدة', '2026-04-18 09:08:18', '2026-04-18 09:08:18');
+INSERT INTO `assets` (`id`, `name`, `asset_type_id`, `purchase_date`, `maintenance_due_date`, `maintenance_cycle_months`, `last_maintenance_date`, `maintenance_interval_months`, `price`, `vendor`, `serial_number`, `department_id`, `employee_id`, `maintenance_status`, `created_at`, `updated_at`) VALUES
+(19, 'phone', NULL, '2025-07-22', '2026-04-02', 3, '2026-05-11', 3, 5000.00, 'ali', 'ASSET-687FB77CDDE08', 2, NULL, 'جيدة', '2025-07-22 13:08:28', '2026-05-11 05:59:08'),
+(22, '7', NULL, '2026-04-18', '2026-04-21', 1, '2026-04-18', 3, 50.00, 'ء', 'ASSET-69E36EA9E3AD3', 1, NULL, 'جيدة', '2026-04-18 08:44:41', '2026-04-18 09:03:16'),
+(23, 'Osama Ahmed', 1, '2026-04-18', '2026-07-18', 9, '2026-05-11', 3, 864.00, '5465', 'ASSET-69E36FE3069AA', 3, 2, 'جيدة', '2026-04-18 08:49:55', '2026-05-11 15:24:48'),
+(24, 'lenove-e456', 1, '2026-04-18', '2026-07-18', 3, '2026-05-11', 3, 5.00, 'ص', 'ASSET-69E3743262318', 3, 1, 'جيدة', '2026-04-18 09:08:18', '2026-05-11 14:34:29');
 
 -- --------------------------------------------------------
 
@@ -267,13 +306,25 @@ CREATE TABLE `asset_deletion_confirmations` (
   `requested_by` bigint UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `asset_deletion_confirmations`
+-- Table structure for table `asset_types`
 --
 
-INSERT INTO `asset_deletion_confirmations` (`id`, `asset_id`, `is_confirmed`, `created_at`, `updated_at`, `requested_by`) VALUES
-(11, 19, 0, '2025-07-22 13:21:04', '2025-07-22 13:21:04', 1),
-(14, 23, 0, '2026-04-18 08:50:19', '2026-04-18 08:50:19', 1);
+CREATE TABLE `asset_types` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `asset_types`
+--
+
+INSERT INTO `asset_types` (`id`, `name`, `created_at`, `updated_at`) VALUES
+(1, 'lab', '2026-05-11 11:02:35', '2026-05-11 11:02:35');
 
 -- --------------------------------------------------------
 
@@ -306,13 +357,17 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('laravel_cache_1b6453892473a467d07372d45eb05abc2031647a', 'i:2;', 1776500098),
-('laravel_cache_1b6453892473a467d07372d45eb05abc2031647a:timer', 'i:1776500098;', 1776500098),
-('laravel_cache_356a192b7913b04c54574d18c28d46e6395428ab', 'i:3;', 1776513018),
-('laravel_cache_356a192b7913b04c54574d18c28d46e6395428ab:timer', 'i:1776513018;', 1776513018),
-('laravel_cache_livewire-rate-limiter:a17961fa74e9275d529f489537f179c05d50c2f3', 'i:1;', 1776512578),
-('laravel_cache_livewire-rate-limiter:a17961fa74e9275d529f489537f179c05d50c2f3:timer', 'i:1776512578;', 1776512578),
-('laravel_cache_spatie.permission.cache', 'a:3:{s:5:\"alias\";a:4:{s:1:\"a\";s:2:\"id\";s:1:\"b\";s:4:\"name\";s:1:\"c\";s:10:\"guard_name\";s:1:\"r\";s:5:\"roles\";}s:11:\"permissions\";a:33:{i:0;a:4:{s:1:\"a\";i:45;s:1:\"b\";s:19:\"عرض الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:1;a:4:{s:1:\"a\";i:46;s:1:\"b\";s:23:\"إنشاء الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:2;a:4:{s:1:\"a\";i:47;s:1:\"b\";s:23:\"تعديل الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:3;a:4:{s:1:\"a\";i:48;s:1:\"b\";s:19:\"حذف الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:4;a:4:{s:1:\"a\";i:49;s:1:\"b\";s:25:\"عرض الإشعارات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:5;a:4:{s:1:\"a\";i:50;s:1:\"b\";s:29:\"تعديل الإشعارات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:6;a:4:{s:1:\"a\";i:51;s:1:\"b\";s:28:\"عرض سجل الأنشطة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:7;a:4:{s:1:\"a\";i:52;s:1:\"b\";s:28:\"عرض طلبات الحذف\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:8;a:4:{s:1:\"a\";i:53;s:1:\"b\";s:32:\"تعديل طلبات الحذف\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:9;a:4:{s:1:\"a\";i:54;s:1:\"b\";s:28:\"حذف طلبات الحذف\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:10;a:4:{s:1:\"a\";i:55;s:1:\"b\";s:21:\"عرض الأقسام\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:11;a:4:{s:1:\"a\";i:56;s:1:\"b\";s:17:\"إنشاء قسم\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:12;a:4:{s:1:\"a\";i:57;s:1:\"b\";s:25:\"تعديل الأقسام\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:13;a:4:{s:1:\"a\";i:58;s:1:\"b\";s:21:\"حذف الأقسام\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:14;a:4:{s:1:\"a\";i:59;s:1:\"b\";s:23:\"عرض الصيانات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:15;a:4:{s:1:\"a\";i:60;s:1:\"b\";s:21:\"إنشاء صيانة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:16;a:4:{s:1:\"a\";i:61;s:1:\"b\";s:27:\"تعديل الصيانات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:17;a:4:{s:1:\"a\";i:62;s:1:\"b\";s:23:\"حذف الصيانات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:18;a:4:{s:1:\"a\";i:63;s:1:\"b\";s:27:\"عرض المستخدمين\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:19;a:4:{s:1:\"a\";i:64;s:1:\"b\";s:23:\"إنشاء مستخدم\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:20;a:4:{s:1:\"a\";i:65;s:1:\"b\";s:31:\"تعديل المستخدمين\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:21;a:4:{s:1:\"a\";i:66;s:1:\"b\";s:27:\"حذف المستخدمين\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:22;a:4:{s:1:\"a\";i:67;s:1:\"b\";s:25:\"عرض الصلاحيات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:23;a:4:{s:1:\"a\";i:68;s:1:\"b\";s:23:\"إنشاء صلاحية\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:24;a:4:{s:1:\"a\";i:69;s:1:\"b\";s:29:\"تعديل الصلاحيات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:25;a:4:{s:1:\"a\";i:70;s:1:\"b\";s:25:\"حذف الصلاحيات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:26;a:4:{s:1:\"a\";i:71;s:1:\"b\";s:21:\"عرض الأدوار\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:27;a:4:{s:1:\"a\";i:72;s:1:\"b\";s:17:\"إنشاء دور\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:28;a:4:{s:1:\"a\";i:73;s:1:\"b\";s:25:\"تعديل الأدوار\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:29;a:4:{s:1:\"a\";i:74;s:1:\"b\";s:21:\"حذف الأدوار\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:30;a:4:{s:1:\"a\";i:75;s:1:\"b\";s:38:\"عرض إحصائيات الصيانة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:31;a:4:{s:1:\"a\";i:76;s:1:\"b\";s:36:\"عرض إحصائيات الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:32;a:4:{s:1:\"a\";i:77;s:1:\"b\";s:30:\"عرض جدول الصيانة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}}s:5:\"roles\";a:1:{i:0;a:3:{s:1:\"a\";i:1;s:1:\"b\";s:5:\"admin\";s:1:\"c\";s:3:\"web\";}}}', 1776634480);
+('asset_cache_blocked:ip:10.0.252.231', 'b:1;', 1778526244),
+('asset_cache_livewire-rate-limiter:a17961fa74e9275d529f489537f179c05d50c2f3', 'i:1;', 1778571502),
+('asset_cache_livewire-rate-limiter:a17961fa74e9275d529f489537f179c05d50c2f3:timer', 'i:1778571502;', 1778571502),
+('asset_cache_rate_limit:login:ip:10.0.252.231', 'i:5;', 1778522662),
+('asset_cache_rate_limit:login:ip:127.0.0.1', 'i:1;', 1778574239),
+('asset_cache_rate_limit:read:token:cTfBxR89UqSSHMlwXrEMn1M3JpJvHIn2XrY7wK78Pi9vyuRb1OO5fObucKtA', 'i:16;', 1778522218),
+('asset_cache_rate_limit:read:token:omG15neWBbA8ABtG1vBskL3fF7jfKMkpugK8buHr51a1OZINAWBQzAsthVah', 'i:2;', 1778574385),
+('asset_cache_rate_limit:write:token:bV8CXnszbCh4ZDOEpn1K9C98L68feVV4OA3b7nJB1zBxYR4ENGZhNvFmdNKM', 'i:1;', 1778523866),
+('asset_cache_spatie.permission.cache', 'a:3:{s:5:\"alias\";a:4:{s:1:\"a\";s:2:\"id\";s:1:\"b\";s:4:\"name\";s:1:\"c\";s:10:\"guard_name\";s:1:\"r\";s:5:\"roles\";}s:11:\"permissions\";a:33:{i:0;a:4:{s:1:\"a\";i:45;s:1:\"b\";s:19:\"عرض الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:1;a:4:{s:1:\"a\";i:46;s:1:\"b\";s:23:\"إنشاء الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:2;a:4:{s:1:\"a\";i:47;s:1:\"b\";s:23:\"تعديل الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:3;a:4:{s:1:\"a\";i:48;s:1:\"b\";s:19:\"حذف الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:4;a:4:{s:1:\"a\";i:49;s:1:\"b\";s:25:\"عرض الإشعارات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:5;a:4:{s:1:\"a\";i:50;s:1:\"b\";s:29:\"تعديل الإشعارات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:6;a:4:{s:1:\"a\";i:51;s:1:\"b\";s:28:\"عرض سجل الأنشطة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:7;a:4:{s:1:\"a\";i:52;s:1:\"b\";s:28:\"عرض طلبات الحذف\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:8;a:4:{s:1:\"a\";i:53;s:1:\"b\";s:32:\"تعديل طلبات الحذف\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:9;a:4:{s:1:\"a\";i:54;s:1:\"b\";s:28:\"حذف طلبات الحذف\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:10;a:4:{s:1:\"a\";i:55;s:1:\"b\";s:21:\"عرض الأقسام\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:11;a:4:{s:1:\"a\";i:56;s:1:\"b\";s:17:\"إنشاء قسم\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:12;a:4:{s:1:\"a\";i:57;s:1:\"b\";s:25:\"تعديل الأقسام\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:13;a:4:{s:1:\"a\";i:58;s:1:\"b\";s:21:\"حذف الأقسام\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:14;a:4:{s:1:\"a\";i:59;s:1:\"b\";s:23:\"عرض الصيانات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:15;a:4:{s:1:\"a\";i:60;s:1:\"b\";s:21:\"إنشاء صيانة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:16;a:4:{s:1:\"a\";i:61;s:1:\"b\";s:27:\"تعديل الصيانات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:17;a:4:{s:1:\"a\";i:62;s:1:\"b\";s:23:\"حذف الصيانات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:18;a:4:{s:1:\"a\";i:63;s:1:\"b\";s:27:\"عرض المستخدمين\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:19;a:4:{s:1:\"a\";i:64;s:1:\"b\";s:23:\"إنشاء مستخدم\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:20;a:4:{s:1:\"a\";i:65;s:1:\"b\";s:31:\"تعديل المستخدمين\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:21;a:4:{s:1:\"a\";i:66;s:1:\"b\";s:27:\"حذف المستخدمين\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:22;a:4:{s:1:\"a\";i:67;s:1:\"b\";s:25:\"عرض الصلاحيات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:23;a:4:{s:1:\"a\";i:68;s:1:\"b\";s:23:\"إنشاء صلاحية\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:24;a:4:{s:1:\"a\";i:69;s:1:\"b\";s:29:\"تعديل الصلاحيات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:25;a:4:{s:1:\"a\";i:70;s:1:\"b\";s:25:\"حذف الصلاحيات\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:26;a:4:{s:1:\"a\";i:71;s:1:\"b\";s:21:\"عرض الأدوار\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:27;a:4:{s:1:\"a\";i:72;s:1:\"b\";s:17:\"إنشاء دور\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:28;a:4:{s:1:\"a\";i:73;s:1:\"b\";s:25:\"تعديل الأدوار\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:29;a:4:{s:1:\"a\";i:74;s:1:\"b\";s:21:\"حذف الأدوار\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:30;a:4:{s:1:\"a\";i:75;s:1:\"b\";s:38:\"عرض إحصائيات الصيانة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:31;a:4:{s:1:\"a\";i:76;s:1:\"b\";s:36:\"عرض إحصائيات الأصول\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}i:32;a:4:{s:1:\"a\";i:77;s:1:\"b\";s:30:\"عرض جدول الصيانة\";s:1:\"c\";s:3:\"web\";s:1:\"r\";a:1:{i:0;i:1;}}}s:5:\"roles\";a:1:{i:0;a:3:{s:1:\"a\";i:1;s:1:\"b\";s:5:\"admin\";s:1:\"c\";s:3:\"web\";}}}', 1778609783),
+('asset_cache_violations:ip:10.0.252.231', 'i:10;', 1778526244),
+('asset_cache_violations:ip:127.0.0.1', 'i:10;', 1778525951);
 
 -- --------------------------------------------------------
 
@@ -335,6 +390,7 @@ CREATE TABLE `cache_locks` (
 CREATE TABLE `departments` (
   `id` bigint UNSIGNED NOT NULL,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `administration_id` bigint UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -343,16 +399,17 @@ CREATE TABLE `departments` (
 -- Dumping data for table `departments`
 --
 
-INSERT INTO `departments` (`id`, `name`, `created_at`, `updated_at`) VALUES
-(1, 'it', '2025-07-11 14:02:27', '2025-07-11 14:02:27'),
-(2, 'test', '2025-07-14 15:58:09', '2025-07-14 15:58:09'),
-(3, 'new', '2025-07-14 17:44:18', '2025-07-14 17:44:18'),
-(4, 'admin', '2025-07-19 19:24:33', '2025-07-19 19:24:33'),
-(5, 'log', '2026-04-18 05:04:56', '2026-04-18 05:04:56'),
-(6, 'Osama Ahmed', '2026-04-18 05:05:39', '2026-04-18 05:05:39'),
-(7, 'س', '2026-04-18 09:14:26', '2026-04-18 09:14:26'),
-(8, 'ل', '2026-04-18 09:23:55', '2026-04-18 09:23:55'),
-(9, '4', '2026-04-18 09:24:25', '2026-04-18 09:24:25');
+INSERT INTO `departments` (`id`, `name`, `administration_id`, `created_at`, `updated_at`) VALUES
+(1, 'it', NULL, '2025-07-11 14:02:27', '2025-07-11 14:02:27'),
+(2, 'test', NULL, '2025-07-14 15:58:09', '2025-07-14 15:58:09'),
+(3, 'new', 1, '2025-07-14 17:44:18', '2026-05-11 14:17:44'),
+(4, 'admin', NULL, '2025-07-19 19:24:33', '2025-07-19 19:24:33'),
+(5, 'log', 1, '2026-04-18 05:04:56', '2026-05-11 08:39:41'),
+(6, 'Osama Ahmed', 1, '2026-04-18 05:05:39', '2026-05-11 08:39:50'),
+(7, 'س', NULL, '2026-04-18 09:14:26', '2026-04-18 09:14:26'),
+(8, 'ل', NULL, '2026-04-18 09:23:55', '2026-04-18 09:23:55'),
+(9, '4', NULL, '2026-04-18 09:24:25', '2026-04-18 09:24:25'),
+(10, 'عت', 1, '2026-05-11 08:38:05', '2026-05-11 08:38:05');
 
 -- --------------------------------------------------------
 
@@ -382,6 +439,33 @@ INSERT INTO `department_user` (`id`, `user_id`, `department_id`, `created_at`, `
 (15, 1, 6, NULL, NULL),
 (16, 4, 1, NULL, NULL),
 (17, 5, 1, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employees`
+--
+
+CREATE TABLE `employees` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `api_token` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `priority` enum('high','medium','low') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'medium',
+  `position` enum('employee','office_manager') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'employee',
+  `department_id` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`id`, `name`, `phone`, `password`, `api_token`, `priority`, `position`, `department_id`, `created_at`, `updated_at`) VALUES
+(1, 'سامر', '718323599', '$2y$12$c775eziw6ID9C6Ls5m2rg.SZdrnaoEPDuhnTyb7lW7u8a5ukR4QDK', 'NL2cRoPcC1Uj6fleSnLaiDvBUC5tLoMZk5hVIVecKkBS1gzX3LUoagAZBwyM', 'medium', 'employee', 3, '2026-05-11 10:55:38', '2026-05-11 15:03:28'),
+(2, 'حسام', '7183235995', '$2y$12$XJ7GUZ/GO7pUsR2OA.NHa..T2JvQ7VtO0XoFAfYejKEvGfCCgUloy', 'omG15neWBbA8ABtG1vBskL3fF7jfKMkpugK8buHr51a1OZINAWBQzAsthVah', 'high', 'office_manager', 3, '2026-05-11 15:17:41', '2026-05-12 05:23:00');
 
 -- --------------------------------------------------------
 
@@ -460,7 +544,38 @@ INSERT INTO `maintenances` (`id`, `asset_id`, `note`, `maintenance_date`, `statu
 (20, 19, 'd', '2026-03-09', 'Pending', '2026-03-08 18:07:54', '2026-03-08 18:07:54'),
 (21, 19, 'dgdg', '2026-04-18', 'Maintenance Completed', '2026-04-18 05:17:37', '2026-04-18 05:17:37'),
 (22, 24, NULL, '2026-04-18', 'Maintenance Completed', '2026-04-18 09:13:19', '2026-04-18 09:13:19'),
-(23, 23, NULL, '2026-04-18', 'Maintenance Completed', '2026-04-18 09:27:56', '2026-04-18 09:27:56');
+(23, 23, NULL, '2026-04-18', 'Maintenance Completed', '2026-04-18 09:27:56', '2026-04-18 09:27:56'),
+(24, 19, NULL, '2026-05-11', 'Maintenance Completed', '2026-05-11 05:58:51', '2026-05-11 05:59:08');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `maintenance_requests`
+--
+
+CREATE TABLE `maintenance_requests` (
+  `id` bigint UNSIGNED NOT NULL,
+  `asset_id` bigint UNSIGNED NOT NULL,
+  `employee_id` bigint UNSIGNED NOT NULL,
+  `problem_date` date NOT NULL,
+  `problem_description` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `priority` enum('high','medium','low') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'medium',
+  `status` enum('pending','postponed','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `supervisor_note` text COLLATE utf8mb4_unicode_ci,
+  `it_note` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `maintenance_requests`
+--
+
+INSERT INTO `maintenance_requests` (`id`, `asset_id`, `employee_id`, `problem_date`, `problem_description`, `priority`, `status`, `supervisor_note`, `it_note`, `created_at`, `updated_at`) VALUES
+(1, 23, 1, '2026-04-30', 'عطل بالمروحة', 'high', 'completed', 'ت', 'ت', '2026-05-11 13:39:47', '2026-05-11 13:41:53'),
+(2, 23, 1, '2026-04-30', 'عطل بالمروحة', 'medium', 'pending', NULL, NULL, '2026-05-11 13:47:19', '2026-05-11 13:47:19'),
+(3, 24, 1, '2026-04-30', 'عطل بالمروحة', 'medium', 'completed', '6', '7', '2026-05-11 13:48:02', '2026-05-11 14:34:29'),
+(4, 24, 2, '2026-04-30', 'عطل بالمروحة', 'high', 'pending', NULL, NULL, '2026-05-11 15:23:26', '2026-05-11 15:23:26');
 
 -- --------------------------------------------------------
 
@@ -557,7 +672,93 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (29, '2025_12_26_213551_create_admins_table', 12),
 (30, '2025_12_26_213608_create_branches_table', 12),
 (31, '2025_12_26_213739_create_admin_branch_table', 12),
-(32, '2026_04_18_120523_add_model_name_to_activity_logs_table', 13);
+(32, '2026_04_18_120523_add_model_name_to_activity_logs_table', 13),
+(33, '2026_05_03_210119_create_activity_logs_table', 0),
+(34, '2026_05_03_210119_create_admin_branch_table', 0),
+(35, '2026_05_03_210119_create_admins_table', 0),
+(36, '2026_05_03_210119_create_asset_deletion_confirmations_table', 0),
+(37, '2026_05_03_210119_create_assets_table', 0),
+(38, '2026_05_03_210119_create_branches_table', 0),
+(39, '2026_05_03_210119_create_cache_table', 0),
+(40, '2026_05_03_210119_create_cache_locks_table', 0),
+(41, '2026_05_03_210119_create_department_user_table', 0),
+(42, '2026_05_03_210119_create_departments_table', 0),
+(43, '2026_05_03_210119_create_failed_jobs_table', 0),
+(44, '2026_05_03_210119_create_job_batches_table', 0),
+(45, '2026_05_03_210119_create_jobs_table', 0),
+(46, '2026_05_03_210119_create_maintenances_table', 0),
+(47, '2026_05_03_210119_create_media_table', 0),
+(48, '2026_05_03_210119_create_model_has_permissions_table', 0),
+(49, '2026_05_03_210119_create_model_has_roles_table', 0),
+(50, '2026_05_03_210119_create_nas_table', 0),
+(51, '2026_05_03_210119_create_nasreload_table', 0),
+(52, '2026_05_03_210119_create_notifications_table', 0),
+(53, '2026_05_03_210119_create_password_reset_tokens_table', 0),
+(54, '2026_05_03_210119_create_permissions_table', 0),
+(55, '2026_05_03_210119_create_radacct_table', 0),
+(56, '2026_05_03_210119_create_radcheck_table', 0),
+(57, '2026_05_03_210119_create_radgroupcheck_table', 0),
+(58, '2026_05_03_210119_create_radgroupreply_table', 0),
+(59, '2026_05_03_210119_create_radpostauth_table', 0),
+(60, '2026_05_03_210119_create_radreply_table', 0),
+(61, '2026_05_03_210119_create_radusergroup_table', 0),
+(62, '2026_05_03_210119_create_role_has_permissions_table', 0),
+(63, '2026_05_03_210119_create_roles_table', 0),
+(64, '2026_05_03_210119_create_sessions_table', 0),
+(65, '2026_05_03_210119_create_staff_table', 0),
+(66, '2026_05_03_210119_create_users_table', 0),
+(67, '2026_05_03_210122_add_foreign_keys_to_asset_deletion_confirmations_table', 0),
+(68, '2026_05_03_210122_add_foreign_keys_to_assets_table', 0),
+(69, '2026_05_03_210122_add_foreign_keys_to_department_user_table', 0),
+(70, '2026_05_03_210122_add_foreign_keys_to_maintenances_table', 0),
+(71, '2026_05_03_210122_add_foreign_keys_to_model_has_permissions_table', 0),
+(72, '2026_05_03_210122_add_foreign_keys_to_model_has_roles_table', 0),
+(73, '2026_05_03_210122_add_foreign_keys_to_notifications_table', 0),
+(74, '2026_05_03_210122_add_foreign_keys_to_role_has_permissions_table', 0),
+(75, '2026_05_03_212734_create_activity_logs_table', 0),
+(76, '2026_05_03_212734_create_admin_branch_table', 0),
+(77, '2026_05_03_212734_create_admins_table', 0),
+(78, '2026_05_03_212734_create_asset_deletion_confirmations_table', 0),
+(79, '2026_05_03_212734_create_assets_table', 0),
+(80, '2026_05_03_212734_create_branches_table', 0),
+(81, '2026_05_03_212734_create_cache_table', 0),
+(82, '2026_05_03_212734_create_cache_locks_table', 0),
+(83, '2026_05_03_212734_create_department_user_table', 0),
+(84, '2026_05_03_212734_create_departments_table', 0),
+(85, '2026_05_03_212734_create_failed_jobs_table', 0),
+(86, '2026_05_03_212734_create_job_batches_table', 0),
+(87, '2026_05_03_212734_create_jobs_table', 0),
+(88, '2026_05_03_212734_create_maintenances_table', 0),
+(89, '2026_05_03_212734_create_media_table', 0),
+(90, '2026_05_03_212734_create_model_has_permissions_table', 0),
+(91, '2026_05_03_212734_create_model_has_roles_table', 0),
+(92, '2026_05_03_212734_create_nas_table', 0),
+(93, '2026_05_03_212734_create_nasreload_table', 0),
+(94, '2026_05_03_212734_create_notifications_table', 0),
+(95, '2026_05_03_212734_create_password_reset_tokens_table', 0),
+(96, '2026_05_03_212734_create_permissions_table', 0),
+(97, '2026_05_03_212734_create_role_has_permissions_table', 0),
+(98, '2026_05_03_212734_create_roles_table', 0),
+(99, '2026_05_03_212734_create_sessions_table', 0),
+(100, '2026_05_03_212734_create_staff_table', 0),
+(101, '2026_05_03_212734_create_users_table', 0),
+(102, '2026_05_03_212737_add_foreign_keys_to_asset_deletion_confirmations_table', 0),
+(103, '2026_05_03_212737_add_foreign_keys_to_assets_table', 0),
+(104, '2026_05_03_212737_add_foreign_keys_to_department_user_table', 0),
+(105, '2026_05_03_212737_add_foreign_keys_to_maintenances_table', 0),
+(106, '2026_05_03_212737_add_foreign_keys_to_model_has_permissions_table', 0),
+(107, '2026_05_03_212737_add_foreign_keys_to_model_has_roles_table', 0),
+(108, '2026_05_03_212737_add_foreign_keys_to_notifications_table', 0),
+(109, '2026_05_03_212737_add_foreign_keys_to_role_has_permissions_table', 0),
+(110, '2026_05_11_100700_create_sectors_table', 14),
+(111, '2026_05_11_113256_add_administration_id_to_departments_table', 15),
+(112, '2026_05_11_134532_create_employees_table', 16),
+(113, '2026_05_11_135003_add_employee_id_to_assets_table', 17),
+(114, '2026_05_11_135003_add_fields_to_employees_table', 17),
+(115, '2026_05_11_135801_create_asset_types_table', 18),
+(116, '2026_05_11_135802_add_asset_type_id_to_assets_table', 18),
+(117, '2026_05_11_141130_add_api_token_to_employees_table', 19),
+(118, '2026_05_11_162630_create_maintenance_requests_table', 20);
 
 -- --------------------------------------------------------
 
@@ -652,9 +853,11 @@ CREATE TABLE `notifications` (
 
 INSERT INTO `notifications` (`id`, `asset_id`, `status`, `message`, `is_read`, `created_at`, `updated_at`) VALUES
 (26, 19, '🔔 Less than two months', 'Maintenance Alert: Asset phone status is 🔔 Less than two months', 1, '2025-07-22 13:18:49', '2025-11-28 11:13:30'),
-(29, 23, '❌ Overdue', 'Maintenance Alert: Asset Osama Ahmed status is ❌ Overdue', 1, '2026-04-18 08:50:42', '2026-04-18 08:56:56'),
+(29, 23, '❌ Overdue', 'Maintenance Alert: Asset Osama Ahmed status is ❌ Overdue', 0, '2026-04-18 08:50:42', '2026-04-18 08:56:56'),
 (30, 22, '❓ Unknown', 'Maintenance Alert: Asset 7 status is ❓ Unknown', 0, '2026-04-18 09:03:06', '2026-04-18 09:03:06'),
-(31, 22, '⚠️ Less than a month', 'Maintenance Alert: Asset 7 status is ⚠️ Less than a month', 0, '2026-04-18 09:03:16', '2026-04-18 09:03:16');
+(31, 22, '⚠️ Less than a month', 'Maintenance Alert: Asset 7 status is ⚠️ Less than a month', 0, '2026-04-18 09:03:16', '2026-04-18 09:03:16'),
+(32, 19, '❌ Overdue', 'Maintenance Alert: Asset phone status is ❌ Overdue', 0, '2026-05-11 05:58:22', '2026-05-11 05:58:22'),
+(33, 24, '❌ Overdue', 'Maintenance Alert: Asset lenove-e456 status is ❌ Overdue', 0, '2026-05-11 13:47:53', '2026-05-11 13:47:53');
 
 -- --------------------------------------------------------
 
@@ -720,133 +923,6 @@ INSERT INTO `permissions` (`id`, `name`, `guard_name`, `created_at`, `updated_at
 (75, 'عرض إحصائيات الصيانة', 'web', '2026-04-18 18:28:10', '2026-04-18 18:28:10'),
 (76, 'عرض إحصائيات الأصول', 'web', '2026-04-18 18:31:22', '2026-04-18 18:31:22'),
 (77, 'عرض جدول الصيانة', 'web', '2026-04-18 18:34:27', '2026-04-18 18:34:27');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radacct`
---
-
-CREATE TABLE `radacct` (
-  `radacctid` bigint NOT NULL,
-  `acctsessionid` varchar(64) NOT NULL DEFAULT '',
-  `acctuniqueid` varchar(32) NOT NULL DEFAULT '',
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `realm` varchar(64) DEFAULT NULL,
-  `nasipaddress` varchar(15) NOT NULL DEFAULT '',
-  `nasportid` varchar(15) DEFAULT NULL,
-  `nasporttype` varchar(32) DEFAULT NULL,
-  `acctstarttime` datetime DEFAULT NULL,
-  `acctstoptime` datetime DEFAULT NULL,
-  `acctsessiontime` int DEFAULT NULL,
-  `acctauthentic` varchar(32) DEFAULT NULL,
-  `connectinfo_start` varchar(50) DEFAULT NULL,
-  `connectinfo_stop` varchar(50) DEFAULT NULL,
-  `acctinputoctets` bigint DEFAULT NULL,
-  `acctoutputoctets` bigint DEFAULT NULL,
-  `calledstationid` varchar(50) DEFAULT NULL,
-  `callingstationid` varchar(50) DEFAULT NULL,
-  `acctterminatecause` varchar(32) DEFAULT NULL,
-  `servicetype` varchar(32) DEFAULT NULL,
-  `framedprotocol` varchar(32) DEFAULT NULL,
-  `framedipaddress` varchar(15) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radcheck`
---
-
-CREATE TABLE `radcheck` (
-  `id` int NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `attribute` varchar(64) NOT NULL DEFAULT '',
-  `op` char(2) NOT NULL DEFAULT '==',
-  `value` varchar(253) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `radcheck`
---
-
-INSERT INTO `radcheck` (`id`, `username`, `attribute`, `op`, `value`) VALUES
-(1, 'osama', 'Cleartext-Password', ':=', '111'),
-(3, 'osama1', 'Cleartext-Password', ':=', '999'),
-(4, 'os', '', '==', '999'),
-(5, 'ggg', '', '==', 'ggg'),
-(6, '888', '', '==', '111'),
-(7, '6666', 'Cleartext-Password', ':=', '8888');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radgroupcheck`
---
-
-CREATE TABLE `radgroupcheck` (
-  `id` int UNSIGNED NOT NULL,
-  `groupname` varchar(64) NOT NULL DEFAULT '',
-  `attribute` varchar(64) NOT NULL DEFAULT '',
-  `op` char(2) NOT NULL DEFAULT '==',
-  `value` varchar(253) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radgroupreply`
---
-
-CREATE TABLE `radgroupreply` (
-  `id` int UNSIGNED NOT NULL,
-  `groupname` varchar(64) NOT NULL DEFAULT '',
-  `attribute` varchar(64) NOT NULL DEFAULT '',
-  `op` char(2) NOT NULL DEFAULT '=',
-  `value` varchar(253) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radpostauth`
---
-
-CREATE TABLE `radpostauth` (
-  `id` int NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `pass` varchar(64) NOT NULL DEFAULT '',
-  `reply` varchar(32) NOT NULL DEFAULT '',
-  `authdate` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  `class` varchar(64) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radreply`
---
-
-CREATE TABLE `radreply` (
-  `id` int UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `attribute` varchar(64) NOT NULL DEFAULT '',
-  `op` char(2) NOT NULL DEFAULT '=',
-  `value` varchar(253) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radusergroup`
---
-
-CREATE TABLE `radusergroup` (
-  `id` int UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `groupname` varchar(64) NOT NULL DEFAULT '',
-  `priority` int NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -927,6 +1003,26 @@ INSERT INTO `role_has_permissions` (`permission_id`, `role_id`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `sectors`
+--
+
+CREATE TABLE `sectors` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sectors`
+--
+
+INSERT INTO `sectors` (`id`, `name`, `created_at`, `updated_at`) VALUES
+(1, '45', '2026-05-11 08:37:38', '2026-05-11 08:37:38');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `sessions`
 --
 
@@ -944,7 +1040,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('xXVF542My4kw52JownRF7KIuDcwpgqLZOP8ExWRp', 1, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiR2RjOFlDclo2V09zejVnQUVRa2VEWEg5WXd1cGx5NU5EcjgxN3lnRyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7czoxNzoicGFzc3dvcmRfaGFzaF93ZWIiO3M6NjA6IiQyeSQxMiRRQlhHSUxZM1RrSHdnNzV3RzNqLkJPSldTOThtZ3U1WHlKZDIxU1MublQ0b0xJS05pelhFTyI7czo4OiJmaWxhbWVudCI7YTowOnt9fQ==', 1776548212);
+('HOZmpwmzVLbWoLXrLYm7kPN3yGZQBsWURvQtF8G1', 1, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo3OntzOjY6Il90b2tlbiI7czo0MDoiQm5qNXBuZTlrN1dqdDdtZ0dsUGpaVHY1ZE5nMmU0bnR5Z0tqZ3lwdCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMS9hZG1pbi9hc3NldHMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjM6InVybCI7YTowOnt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTtzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2MDoiJDJ5JDEyJFFCWEdJTFkzVGtId2c3NXdHM2ouQk9KV1M5OG1ndTVYeUpkMjFTUy5uVDRvTElLTml6WEVPIjtzOjg6ImZpbGFtZW50IjthOjA6e319', 1778523952),
+('LLKVWmPp0xYvTmY382HFi55MkRkUHUjnlaBEx0Pf', 1, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo3OntzOjY6Il90b2tlbiI7czo0MDoiOFZQM3JmZUVEcTI5Z3JrSnZ4alJ5TXl4alZUeHg5eDNpSURQSkdPYyI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjQxOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYWRtaW4vYWN0aXZpdHktbG9ncyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7czoxNzoicGFzc3dvcmRfaGFzaF93ZWIiO3M6NjA6IiQyeSQxMiRRQlhHSUxZM1RrSHdnNzV3RzNqLkJPSldTOThtZ3U1WHlKZDIxU1MublQ0b0xJS05pelhFTyI7czo4OiJmaWxhbWVudCI7YTowOnt9fQ==', 1778520874),
+('TSyvRVMvzfQfdlfklWRDWmTJaBQ1nJmOwrh3dI1o', 1, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiSFRFVFlDMkpVZThTWTBGTU1iM3RndHd4ZFRGV243M1NLTzhabmxTbiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MzoidXJsIjthOjA6e31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO3M6MTc6InBhc3N3b3JkX2hhc2hfd2ViIjtzOjYwOiIkMnkkMTIkUUJYR0lMWTNUa0h3Zzc1d0czai5CT0pXUzk4bWd1NVh5SmQyMVNTLm5UNG9MSUtOaXpYRU8iO30=', 1778576163);
 
 -- --------------------------------------------------------
 
@@ -1009,6 +1107,12 @@ ALTER TABLE `activity_logs`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `administrations`
+--
+ALTER TABLE `administrations`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `admins`
 --
 ALTER TABLE `admins`
@@ -1027,7 +1131,9 @@ ALTER TABLE `admin_branch`
 ALTER TABLE `assets`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `assets_serial_number_unique` (`serial_number`),
-  ADD KEY `assets_department_id_foreign` (`department_id`);
+  ADD KEY `assets_department_id_foreign` (`department_id`),
+  ADD KEY `assets_employee_id_foreign` (`employee_id`),
+  ADD KEY `assets_asset_type_id_foreign` (`asset_type_id`);
 
 --
 -- Indexes for table `asset_deletion_confirmations`
@@ -1036,6 +1142,12 @@ ALTER TABLE `asset_deletion_confirmations`
   ADD PRIMARY KEY (`id`),
   ADD KEY `asset_deletion_confirmations_asset_id_foreign` (`asset_id`),
   ADD KEY `asset_deletion_confirmations_requested_by_foreign` (`requested_by`);
+
+--
+-- Indexes for table `asset_types`
+--
+ALTER TABLE `asset_types`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `branches`
@@ -1059,7 +1171,8 @@ ALTER TABLE `cache_locks`
 -- Indexes for table `departments`
 --
 ALTER TABLE `departments`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `departments_administration_id_foreign` (`administration_id`);
 
 --
 -- Indexes for table `department_user`
@@ -1068,6 +1181,14 @@ ALTER TABLE `department_user`
   ADD PRIMARY KEY (`id`),
   ADD KEY `department_user_user_id_foreign` (`user_id`),
   ADD KEY `department_user_department_id_foreign` (`department_id`);
+
+--
+-- Indexes for table `employees`
+--
+ALTER TABLE `employees`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `employees_api_token_unique` (`api_token`),
+  ADD KEY `employees_department_id_foreign` (`department_id`);
 
 --
 -- Indexes for table `failed_jobs`
@@ -1095,6 +1216,14 @@ ALTER TABLE `job_batches`
 ALTER TABLE `maintenances`
   ADD PRIMARY KEY (`id`),
   ADD KEY `maintenances_asset_id_foreign` (`asset_id`);
+
+--
+-- Indexes for table `maintenance_requests`
+--
+ALTER TABLE `maintenance_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `maintenance_requests_asset_id_foreign` (`asset_id`),
+  ADD KEY `maintenance_requests_employee_id_foreign` (`employee_id`);
 
 --
 -- Indexes for table `media`
@@ -1158,56 +1287,6 @@ ALTER TABLE `permissions`
   ADD UNIQUE KEY `permissions_name_guard_name_unique` (`name`,`guard_name`);
 
 --
--- Indexes for table `radacct`
---
-ALTER TABLE `radacct`
-  ADD PRIMARY KEY (`radacctid`),
-  ADD KEY `username` (`username`);
-
---
--- Indexes for table `radcheck`
---
-ALTER TABLE `radcheck`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `username` (`username`);
-
---
--- Indexes for table `radgroupcheck`
---
-ALTER TABLE `radgroupcheck`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `groupname` (`groupname`(32));
-
---
--- Indexes for table `radgroupreply`
---
-ALTER TABLE `radgroupreply`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `groupname` (`groupname`(32));
-
---
--- Indexes for table `radpostauth`
---
-ALTER TABLE `radpostauth`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `username` (`username`),
-  ADD KEY `class` (`class`);
-
---
--- Indexes for table `radreply`
---
-ALTER TABLE `radreply`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `username` (`username`(32));
-
---
--- Indexes for table `radusergroup`
---
-ALTER TABLE `radusergroup`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `username` (`username`(32));
-
---
 -- Indexes for table `roles`
 --
 ALTER TABLE `roles`
@@ -1220,6 +1299,12 @@ ALTER TABLE `roles`
 ALTER TABLE `role_has_permissions`
   ADD PRIMARY KEY (`permission_id`,`role_id`),
   ADD KEY `role_has_permissions_role_id_foreign` (`role_id`);
+
+--
+-- Indexes for table `sectors`
+--
+ALTER TABLE `sectors`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `sessions`
@@ -1251,7 +1336,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=147;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
+
+--
+-- AUTO_INCREMENT for table `administrations`
+--
+ALTER TABLE `administrations`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `admins`
@@ -1278,6 +1369,12 @@ ALTER TABLE `asset_deletion_confirmations`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
+-- AUTO_INCREMENT for table `asset_types`
+--
+ALTER TABLE `asset_types`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `branches`
 --
 ALTER TABLE `branches`
@@ -1287,13 +1384,19 @@ ALTER TABLE `branches`
 -- AUTO_INCREMENT for table `departments`
 --
 ALTER TABLE `departments`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `department_user`
 --
 ALTER TABLE `department_user`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `employees`
+--
+ALTER TABLE `employees`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1311,7 +1414,13 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `maintenances`
 --
 ALTER TABLE `maintenances`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT for table `maintenance_requests`
+--
+ALTER TABLE `maintenance_requests`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `media`
@@ -1323,7 +1432,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- AUTO_INCREMENT for table `nas`
@@ -1335,7 +1444,7 @@ ALTER TABLE `nas`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1344,52 +1453,16 @@ ALTER TABLE `permissions`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
--- AUTO_INCREMENT for table `radacct`
---
-ALTER TABLE `radacct`
-  MODIFY `radacctid` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radcheck`
---
-ALTER TABLE `radcheck`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `radgroupcheck`
---
-ALTER TABLE `radgroupcheck`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radgroupreply`
---
-ALTER TABLE `radgroupreply`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radpostauth`
---
-ALTER TABLE `radpostauth`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radreply`
---
-ALTER TABLE `radreply`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radusergroup`
---
-ALTER TABLE `radusergroup`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `sectors`
+--
+ALTER TABLE `sectors`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `staff`
@@ -1411,7 +1484,9 @@ ALTER TABLE `users`
 -- Constraints for table `assets`
 --
 ALTER TABLE `assets`
-  ADD CONSTRAINT `assets_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `assets_asset_type_id_foreign` FOREIGN KEY (`asset_type_id`) REFERENCES `asset_types` (`id`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `assets_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `assets_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `asset_deletion_confirmations`
@@ -1421,6 +1496,12 @@ ALTER TABLE `asset_deletion_confirmations`
   ADD CONSTRAINT `asset_deletion_confirmations_requested_by_foreign` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `departments`
+--
+ALTER TABLE `departments`
+  ADD CONSTRAINT `departments_administration_id_foreign` FOREIGN KEY (`administration_id`) REFERENCES `administrations` (`id`) ON DELETE RESTRICT;
+
+--
 -- Constraints for table `department_user`
 --
 ALTER TABLE `department_user`
@@ -1428,10 +1509,23 @@ ALTER TABLE `department_user`
   ADD CONSTRAINT `department_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `employees`
+--
+ALTER TABLE `employees`
+  ADD CONSTRAINT `employees_department_id_foreign` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE RESTRICT;
+
+--
 -- Constraints for table `maintenances`
 --
 ALTER TABLE `maintenances`
   ADD CONSTRAINT `maintenances_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `maintenance_requests`
+--
+ALTER TABLE `maintenance_requests`
+  ADD CONSTRAINT `maintenance_requests_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `maintenance_requests_employee_id_foreign` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `model_has_permissions`

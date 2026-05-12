@@ -50,15 +50,5 @@ public function canAccessPanel(Panel $panel): bool
 {
     return true;
 }
-    /**
-     * العلاقة مع الأدوار (هذه العلاقة مضافة تلقائياً بفضل HasRoles trait,
-     * لكن لو حبيت تضيفها بشكل يدوي، كالتالي:)
-     */
-    /*
-    public function roles()
-    {
-        return $this->belongsToMany(\Spatie\Permission\Models\Role::class, 'model_has_roles', 'model_id', 'role_id')
-            ->wherePivot('model_type', self::class);
-    }
-    */
+
 }

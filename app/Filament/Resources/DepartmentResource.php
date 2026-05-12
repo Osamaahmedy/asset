@@ -4,12 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DepartmentResource\Pages;
 use App\Models\Department;
+use App\Models\Administration;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,25 +20,38 @@ class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
 
-    protected static ?string $navigationGroup   = 'إدارة الأصول';
-    protected static ?string $navigationLabel   = 'الأقسام';
-    protected static ?string $pluralModelLabel  = 'الأقسام';
-    protected static ?string $modelLabel        = 'قسم';
-    protected static ?string $navigationIcon    = 'heroicon-o-building-office-2';
-    protected static ?int    $navigationSort    = 3;
+    protected static ?string $navigationGroup  = 'إدارة الأصول';
+    protected static ?string $navigationLabel  = 'المكاتب';       // ← تغيير العرض فقط
+    protected static ?string $pluralModelLabel = 'المكاتب';
+    protected static ?string $modelLabel       = 'مكتب';
+    protected static ?string $navigationIcon   = 'heroicon-o-building-office-2';
+    protected static ?int    $navigationSort   = 3;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات القسم')
+            Forms\Components\Section::make('معلومات المكتب')
                 ->icon('heroicon-o-building-office-2')
                 ->schema([
+                    Select::make('administration_id')
+                        ->label('الإدارة')
+                        ->relationship('administration', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->placeholder('اختر الإدارة')
+                        // عرض القطاع مع اسم الإدارة للتوضيح
+                        ->getOptionLabelFromRecordUsing(
+                            fn(Administration $record) =>
+                                "{$record->name} — ({$record->sector?->name})"
+                        ),
+
                     TextInput::make('name')
-                        ->label('اسم القسم')
+                        ->label('اسم المكتب')
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255)
-                        ->placeholder('مثال: قسم تقنية المعلومات'),
+                        ->placeholder('مثال: مكتب شؤون الموظفين'),
                 ]),
         ]);
     }
@@ -45,8 +60,22 @@ class DepartmentResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('administration.sector.name')
+                    ->label('القطاع')
+                    ->sortable()
+                    ->searchable()
+                    ->badge()
+                    ->color('gray'),
+
+                TextColumn::make('administration.name')
+                    ->label('الإدارة')
+                    ->sortable()
+                    ->searchable()
+                    ->badge()
+                    ->color('info'),
+
                 TextColumn::make('name')
-                    ->label('اسم القسم')
+                    ->label('اسم المكتب')
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
@@ -65,14 +94,25 @@ class DepartmentResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('حذف')
+                    ->before(function ($record, $action) {
+                        if ($record->assets()->exists()) {
+                            $action->cancel();
+                            \Filament\Notifications\Notification::make()
+                                ->title('لا يمكن حذف المكتب')
+                                ->body('يحتوي المكتب على أصول مرتبطة.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
             ])
             ->emptyStateIcon('heroicon-o-building-office-2')
-            ->emptyStateHeading('لا توجد أقسام')
-            ->emptyStateDescription('ابدأ بإضافة قسم جديد.');
+            ->emptyStateHeading('لا توجد مكاتب')
+            ->emptyStateDescription('ابدأ بإضافة مكتب جديد.');
     }
 
     public static function getPages(): array
@@ -110,16 +150,20 @@ class DepartmentResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
+        $query = parent::getEloquentQuery()->with(['administration.sector']);
 
-        if (!auth()->check()) {
+        $user = auth()->user();
+
+        if (!$user) {
             return $query->whereRaw('0 = 1');
         }
 
-        $userDepartmentIds = auth()->user()
-            ->departments()
-            ->pluck('departments.id')
-            ->toArray();
+        // المدير العام يرى كل المكاتب
+        if ($user->can('عرض جميع الأقسام')) {
+            return $query;
+        }
+
+        $userDepartmentIds = $user->departments()->pluck('departments.id')->toArray();
 
         if (empty($userDepartmentIds)) {
             return $query->whereRaw('0 = 1');

@@ -1,37 +1,38 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\NewsApiController;
-use App\Http\Controllers\Api\EducationController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AssetController;
+use App\Http\Controllers\Api\MaintenanceRequestController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application.
-| These routes are loaded by the RouteServiceProvider and all of them
-| will be assigned to the "api" middleware group. Make something great!
-|
-*/
+// ─── حماية عامة لكل الـ API ───────────────────────────────────────────────────
+Route::middleware(['api.security'])->group(function () {
 
-// اختبار الاتصال
-// api.php
+    // ─── Login: أشد قيوداً (5 محاولات فقط) ──────────────────────────────────
+    Route::middleware(['api.throttle:login'])
+        ->post('/auth/login', [AuthController::class, 'login']);
 
-Route::get('/news', [NewsApiController::class, 'index']);
-Route::get('/news/{id}', [NewsApiController::class, 'show']);
-Route::get('/ping', function () {
-    return response()->json(['message' => 'API Working ✅']);
+    // ─── Routes المحمية بالتوكن ───────────────────────────────────────────────
+    Route::middleware(['api.auth'])->group(function () {
+
+        // Auth — قراءة/كتابة عادية
+        Route::middleware(['api.throttle:read'])
+            ->get('/auth/profile', [AuthController::class, 'profile']);
+
+        Route::middleware(['api.throttle:write'])
+            ->post('/auth/logout', [AuthController::class, 'logout']);
+
+        // Assets — قراءة فقط
+        Route::middleware(['api.throttle:read'])->group(function () {
+            Route::get('/assets',      [AssetController::class, 'index']);
+            Route::get('/assets/{id}', [AssetController::class, 'show']);
+        });
+
+        // Maintenance Requests — كتابة أشد
+        Route::middleware(['api.throttle:write'])->group(function () {
+            Route::post('/maintenance-requests',     [MaintenanceRequestController::class, 'store']);
+            Route::get('/maintenance-requests',      [MaintenanceRequestController::class, 'myRequests']);
+            Route::get('/maintenance-requests/{id}', [MaintenanceRequestController::class, 'show']);
+        });
+    });
 });
-
-
-Route::get('/universities', [EducationController::class, 'universities']);
-Route::get('/institutes', [EducationController::class, 'institutes']);
-
-use App\Http\Controllers\Api\StudentApiController;
-use App\Http\Controllers\Api\StudentFileUploadController;
-
-Route::get('/countries', [StudentApiController::class, 'countries']);
-Route::post('/students/submit', [StudentApiController::class, 'submitStudent']);
-Route::post('/students/upload-file', [StudentFileUploadController::class, 'uploadFile']);

@@ -6,6 +6,7 @@ use App\Filament\Resources\ActivityLogResource\Pages;
 use App\Models\ActivityLog;
 use App\Models\Asset;
 use App\Models\Maintenance;
+use App\Models\MaintenanceRequest;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -61,14 +62,16 @@ class ActivityLogResource extends Resource
                     ->label('نوع العنصر')
                     ->sortable()
                     ->formatStateUsing(fn($state) => match (class_basename($state)) {
-                        'Asset'       => '📦 أصل',
-                        'Maintenance' => '🔧 صيانة',
-                        default       => class_basename($state),
-                    })
-                    ->colors([
-                        'primary' => fn($state) => class_basename($state) === 'Asset',
-                        'warning' => fn($state) => class_basename($state) === 'Maintenance',
-                    ]),
+    'Asset'              => '📦 أصل',
+    'Maintenance'        => '🔧 صيانة',
+    'MaintenanceRequest' => '📋 طلب صيانة',
+    default              => class_basename($state),
+})
+->colors([
+    'primary' => fn($state) => class_basename($state) === 'Asset',
+    'warning' => fn($state) => class_basename($state) === 'Maintenance',
+    'info'    => fn($state) => class_basename($state) === 'MaintenanceRequest',
+]),
 
                 TextColumn::make('description')
                     ->label('تفاصيل إضافية')
@@ -97,6 +100,7 @@ class ActivityLogResource extends Resource
                     ->options([
                         Asset::class       => 'أصل',
                         Maintenance::class => 'صيانة',
+                        MaintenanceRequest::class => 'طلب صيانة',
                     ]),
             ])
             ->defaultSort('created_at', 'desc')

@@ -21,28 +21,29 @@ class ActivityLog extends Model
     }
 
     // ── Helper: أنشئ سجل مع حفظ الاسم فوراً ─────────────────────────────────
-    public static function log(string $action, Model $model, ?string $description = null): self
-    {
-        // استخرج الاسم حسب نوع الموديل
-        $modelName = match (true) {
-            $model instanceof Asset       => $model->name,
-            $model instanceof Maintenance => 'صيانة: ' . ($model->asset?->name ?? 'أصل محذوف'),
-            default                       => $description ?? class_basename($model),
-        };
+   public static function log(string $action, Model $model, ?string $description = null): self
+{
+    $modelName = match (true) {
+        $model instanceof Asset              => $model->name,
+        $model instanceof Maintenance        => 'صيانة: ' . ($model->asset?->name ?? 'أصل محذوف'),
+        $model instanceof MaintenanceRequest => 'طلب صيانة: ' . ($model->asset?->name ?? 'أصل محذوف'),
+        default                              => $description ?? class_basename($model),
+    };
 
-        $departmentName = match (true) {
-            $model instanceof Asset       => $model->department?->name,
-            $model instanceof Maintenance => $model->asset?->department?->name,
-            default                       => null,
-        };
+    $departmentName = match (true) {
+        $model instanceof Asset              => $model->department?->name,
+        $model instanceof Maintenance        => $model->asset?->department?->name,
+        $model instanceof MaintenanceRequest => $model->asset?->department?->name,
+        default                              => null,
+    };
 
-        return static::create([
-            'action'          => $action,
-            'model_type'      => get_class($model),
-            'model_id'        => $model->getKey(),
-            'model_name'      => $modelName,
-            'department_name' => $departmentName,
-            'description'     => $description,
-        ]);
-    }
+    return static::create([
+        'action'          => $action,
+        'model_type'      => get_class($model),
+        'model_id'        => $model->getKey(),
+        'model_name'      => $modelName,
+        'department_name' => $departmentName,
+        'description'     => $description,
+    ]);
+}
 }

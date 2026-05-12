@@ -19,7 +19,8 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\DeleteBulkAction;
-
+use App\Models\Employee;
+use App\Models\AssetType;
 class AssetResource extends Resource
 {
     protected static ?string $model = Asset::class;
@@ -66,7 +67,20 @@ class AssetResource extends Resource
                         })
                         ->preload()
                         ->searchable(),
-                ]),
+
+                    Select::make('employee_id')
+                        ->label('الموظف المسؤول')
+                        ->options(function () {
+                            return Employee::with('department')
+                                ->get()
+                                ->mapWithKeys(fn($emp) => [
+                                    $emp->id => "{$emp->name} — {$emp->department?->name}"
+                                ]);
+                        })
+                        ->searchable()
+                        ->nullable()
+                        ->placeholder('اختر الموظف (اختياري)'),
+                                    ]),
 
             Forms\Components\Section::make('التواريخ والصيانة')
                 ->icon('heroicon-o-calendar')
@@ -101,23 +115,25 @@ class AssetResource extends Resource
                         ->displayFormat('Y/m/d'),
                 ]),
 
-            Forms\Components\Section::make('المرفقات')
-                ->icon('heroicon-o-paper-clip')
-                ->columns(2)
-                ->schema([
-                    SpatieMediaLibraryFileUpload::make('image')
-                        ->collection('image')
-                        ->label('صورة الأصل')
-                        ->image()
-                        ->imageEditor()
-                        ->maxSize(5120),
+            Forms\Components\Section::make('تصنيف الأصل')
+              ->icon('heroicon-o-tag')
+               ->schema([
+                   Select::make('asset_type_id')
+                        ->label('نوع الأصل')
+                        ->relationship('assetType', 'name')
+                      ->searchable()
+                         ->preload()
+                       ->required()
+                         ->createOptionForm([
+                            TextInput::make('name')
+                                ->label('اسم النوع')
+                               ->required()
+                              ->maxLength(255),
+                      ])
+                      ->placeholder('اختر نوع الأصل'),
+                 ]),
 
-                    SpatieMediaLibraryFileUpload::make('document')
-                        ->collection('document')
-                        ->label('مستند (ضمان / فاتورة)')
-                        ->maxSize(10240)
-                        ->acceptedFileTypes(['application/pdf', 'image/*']),
-                ]),
+
 
         ]);
     }
@@ -149,9 +165,22 @@ class AssetResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('department.name')
-                    ->label('القسم')
+                    ->label('المكتب')
                     ->badge()
                     ->sortable(),
+                TextColumn::make('employee.name')
+                    ->label('الموظف المسؤول')
+                    ->searchable()
+                    ->badge()
+                    ->color('warning')
+                    ->default('—'),
+                TextColumn::make('assetType.name')
+                    ->label('نوع الأصل')
+                    ->sortable()
+                    ->searchable()
+                    ->badge()
+                    ->color('warning')
+                    ->default('—'),
 
                 TextColumn::make('purchase_date')
                     ->label('تاريخ الشراء')
