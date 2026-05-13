@@ -1,266 +1,414 @@
-# Address API Documentation
+# API Documentation — Support System
+**Base URL:** `https://support.moheye.net/api`
 
-## Base URL
-
-```
-https://support.moheye.net/api
-```
+---
 
 ## Authentication
 
-جميع الـ endpoints تتطلب توثيق:
+جميع الـ endpoints (عدا Login) تتطلب:
 
 ```
 Authorization: Bearer {token}
+Content-Type: application/json
+Accept: application/json
 ```
 
-***
-
-# 1) login
-
-جلب جميع عناوين العميل مرتبة بحيث يظهر العنوان الافتراضي أولاً.
-
-## Endpoint
-
-```
-Post /auth/login
-```
-## Request Body
 ---
+
+## 1. Login
+
+**`POST /auth/login`**
+
+لا يتطلب توثيقاً مسبقاً. مقيّد بـ **5 محاولات / دقيقة** لكل IP.
+
+### Request Body
+
 ```json
 {
-    "phone":"7xxxxxxx",
-    "password":"pxxxxxx"
+  "phone": "7xxxxxxxx",
+  "password": "pxxxxxxxx"
 }
 ```
----
-***
 
-## Success Response (200)
+| الحقل | النوع | مطلوب | الوصف |
+|-------|-------|-------|-------|
+| `phone` | string | ✅ | رقم هاتف الموظف |
+| `password` | string | ✅ | كلمة المرور |
+
+### Success Response `200`
+
+```json
+{
+  "success": true,
+  "message": "تم تسجيل الدخول بنجاح",
+  "data": {
+    "token": "kyPhxWAW1yyz3Tv9J0IrXCpGin8H3FqTBRqhNoLme5j3acuXMbPvcD5BrdaA",
+    "employee": {
+      "id": 3,
+      "name": "مجد معاذ",
+      "phone": "782532962",
+      "position": "office_manager"
+    }
+  }
+}
+```
+
+### Error Responses
+
+| الكود | الحالة | الرسالة |
+|-------|--------|---------|
+| `401` | بيانات خاطئة | `"رقم الهاتف أو كلمة المرور غير صحيحة"` |
+| `429` | تجاوز الحد | `"تم تجاوز الحد المسموح به من الطلبات"` |
+
+---
+
+## 2. Profile
+
+**`GET /auth/profile`**
+
+جلب بيانات الموظف الحالي مع المكتب والإدارة والقطاع.
+
+### Request
+
+لا يحتاج Body.
+
+### Success Response `200`
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 3,
+    "name": "مجد معاذ",
+    "phone": "782532962",
+    "position": "office_manager",
+    "department": {
+      "id": 6,
+      "name": "الموارد البشرية"
+    },
+    "administration": {
+      "id": 2,
+      "name": "إدارة الشؤون الإدارية"
+    },
+    "sector": {
+      "id": 1,
+      "name": "القطاع الإداري"
+    }
+  }
+}
+```
+
+---
+
+## 3. Logout
+
+**`POST /auth/logout`**
+
+إلغاء الجلسة الحالية وحذف التوكن.
+
+### Request
+
+لا يحتاج Body، لكن **يجب** إرسال الهيدر:
+```
+Content-Type: application/json
+```
+
+### Success Response `200`
+
+```json
+{
+  "success": true,
+  "message": "تم تسجيل الخروج بنجاح"
+}
+```
+
+---
+
+## 4. Assets — قائمة الأصول
+
+**`GET /assets`**
+
+جلب جميع أصول مكتب الموظف الحالي.
+
+### Request
+
+لا يحتاج Body.
+
+### Success Response `200`
 
 ```json
 {
     "success": true,
-    "message": "تم تسجيل الدخول بنجاح",
-    "data": {
-        "token": "kyPhxWAW1yyz3Tv9J0IrXCpGin8H3FqTBRqhNoLme5j3acuXMbPvcD5BrdaA",
-        "employee": {
-            "id": 3,
-            "name": "مجد معاذ",
-            "phone": "782532962",
-            "position": "office_manager",
-            "priority": "low",
+    "total": 1,
+    "data": [
+        {
+            "id": 27,
+            "name": "phone",
+            "serial_number": "ASSET-6A044F4460C12",
+            "price": "5000.00",
+            "vendor": "ali",
+            "purchase_date": "2026-05-13",
+            "type": {
+                "id": 2,
+                "name": "Tv"
+            },
             "department": {
                 "id": 6,
                 "name": "الموارد "
-            }
+            },
+            "administration": {
+                "id": 2,
+                "name": "التصديق"
+            },
+            "sector": {
+                "id": 2,
+                "name": "قطاع البعثات"
+            },
+            "assigned_to": {
+                "id": 3,
+                "name": "مجد معاذ",
+                "phone": "782532962",
+                "position": "office_manager"
+            },
+            "maintenance": {
+                "status": "✅ Good",
+                "last_date": "2026-05-13",
+                "cycle_months": 3,
+                "due_date": "2026-08-13"
+            },
+            "created_at": "2026/05/13"
         }
-    }
+    ]
 }
 ```
 
-***
+### Error Responses
 
-# 2) Create Address
+| الكود | الحالة | الرسالة |
+|-------|--------|---------|
+| `403` | لا يوجد مكتب | `"الموظف غير مرتبط بأي مكتب"` |
 
-إنشاء عنوان جديد. إذا كان أول عنوان للعميل يتم تعيينه تلقائياً كعنوان افتراضي.
+---
 
-## Endpoint
+## 5. Assets — تفاصيل أصل واحد
 
-```
-POST /addresses
-```
+**`GET /assets/{id}`**
 
-## Request Body
+جلب تفاصيل أصل محدد يخص مكتب الموظف.
 
-| الحقل | النوع | مطلوب | الوصف |
-|---|---|---|---|
-| `title` | string | ✅ | عنوان مختصر للموقع |
-| `description` | string | ❌ | وصف تفصيلي للعنوان |
-| `latitude` | numeric | ✅ | خط العرض |
-| `longitude` | numeric | ✅ | خط الطول |
-
-### مثال
-
-```json
-{
-    "title": "البيت",
-    "description": "عدن المنصوره - شارع 90 بجانب مطعم الطويل",
-    "latitude": 84.187524,
-    "longitude": 44.548
-}
-```
-
-***
-
-## Success Response (201)
-
-```json
-{
-    "status": true,
-    "message": "تم إضافة العنوان بنجاح",
-    "address": {
-        "id": 8,
-        "customer_id": 3,
-        "title": "البيت",
-        "description": "عدن المنصوره - شارع 90 بجانب مطعم الطويل",
-        "latitude": 84.187524,
-        "longitude": 44.548,
-        "status": "active",
-        "is_default": false,
-        "created_at": "2026-04-19T22:00:00.000000Z",
-        "updated_at": "2026-04-19T22:00:00.000000Z"
-    }
-}
-```
-
-> **ملاحظة:** إذا كان هذا أول عنوان للعميل سيكون `is_default: true` تلقائياً.
-
-***
-
-## Error Response (422)
-
-```json
-{
-    "status": false,
-    "errors": {
-        "title": ["The title field is required."],
-        "latitude": ["The latitude field is required."],
-        "longitude": ["The longitude field is required."]
-    }
-}
-```
-
-***
-
-# 3) Toggle Address Status
-
-تبديل حالة العنوان بين `active` و `inactive`.
-
-## Endpoint
-
-```
-PATCH /addresses/{address}/status
-```
-
-## Path Parameters
+### Path Parameters
 
 | المعامل | النوع | الوصف |
-|---|---|---|
-| `address` | integer | معرّف العنوان |
+|---------|-------|-------|
+| `id` | integer | معرّف الأصل |
 
-***
+### Success Response `200`
 
-## Success Response (200)
+نفس بنية الأصل أعلاه داخل `data` مباشرةً.
 
 ```json
 {
-    "status": true,
-    "message": "تم تحديث الحالة",
-    "address": {
-        "id": 7,
-        "customer_id": 3,
-        "title": "البيت",
-        "description": "عدن المنصوره - شارع 90 بجانب مطعم الطويل",
-        "latitude": 84.187524,
-        "longitude": 44.548,
-        "status": "inactive",
-        "is_default": true,
-        "created_at": "2026-04-18T23:45:00.000000Z",
-        "updated_at": "2026-04-19T22:05:00.000000Z"
+  "success": true,
+  "data": { ... }
+}
+```
+
+### Error Responses
+
+| الكود | الحالة | الرسالة |
+|-------|--------|---------|
+| `404` | غير موجود أو لا صلاحية | `"الأصل غير موجود أو لا تملك صلاحية الوصول إليه"` |
+
+---
+
+## 6. Maintenance Requests — إرسال طلب صيانة
+
+**`POST /maintenance-requests`**
+
+إنشاء طلب صيانة جديد لأصل تابع لمكتب الموظف.
+
+### Request Body
+
+```json
+{
+  "asset_id": 5,
+  "problem_date": "2024/07/01",
+  "problem_description": "الشاشة تعرض خطوطاً رأسية عند التشغيل"
+}
+```
+
+| الحقل | النوع | مطلوب | القيود |
+|-------|-------|-------|--------|
+| `asset_id` | integer | ✅ | يجب أن يكون موجوداً في `assets` |
+| `problem_date` | date | ✅ | `Y-m-d` — لا يجوز أن يكون في المستقبل |
+| `problem_description` | string | ✅ | بين 10 و 1000 حرف |
+
+### Success Response `201`
+
+```json
+{
+  "success": true,
+  "message": "تم إرسال طلب الصيانة بنجاح",
+  "data": {
+    "id": 18,
+    "problem_date": "2024/07/01",
+    "problem_description": "الشاشة تعرض خطوطاً رأسية عند التشغيل",
+    "status_label": "قيد الانتظار",
+    "created_at": "2024/07/02 - 10:30 AM",
+    "submitted_by": {
+      "id": 3,
+      "name": "مجد معاذ",
+      "phone": "782532962",
+      "position": "office_manager"
+    },
+    "asset": {
+      "id": 5,
+      "name": "حاسوب محمول Dell",
+      "serial_number": "SN-2024-00123",
+      "assigned_to": {
+        "id": 3,
+        "name": "مجد معاذ"
+      }
+    },
+    "department": {
+      "id": 6,
+      "name": "الموارد البشرية"
+    },
+    "administration": {
+      "id": 2,
+      "name": "إدارة الشؤون الإدارية"
+    },
+    "sector": {
+      "id": 1,
+      "name": "القطاع الإداري"
     }
+  }
 }
 ```
 
-***
+### Error Responses
 
-## Error Response (403)
+| الكود | الحالة | الرسالة |
+|-------|--------|---------|
+| `403` | الأصل ليس من مكتبك | `"الأصل غير موجود أو لا ينتمي لمكتبك"` |
+| `409` | يوجد طلب معلق | `"يوجد طلب صيانة قيد الانتظار أو مؤجل لهذا الأصل بالفعل"` |
+| `422` | خطأ في البيانات | انظر جدول أخطاء الـ Validation أدناه |
+
+#### أخطاء Validation `422`
 
 ```json
 {
-    "status": false,
-    "message": "غير مصرح"
+  "success": false,
+  "message": "خطأ في البيانات المدخلة",
+  "errors": {
+    "asset_id": ["يجب اختيار الأصل"],
+    "problem_date": ["تاريخ المشكلة مطلوب"],
+    "problem_description": ["وصف المشكلة يجب أن يكون 10 أحرف على الأقل"]
+  }
 }
 ```
 
-***
+---
 
-# 4) Set Default Address
+## 7. Maintenance Requests — طلباتي
 
-تعيين عنوان معين كعنوان افتراضي. يتم إلغاء الافتراضي من جميع العناوين الأخرى تلقائياً.
+**`GET /maintenance-requests`**
 
-## Endpoint
+جلب جميع طلبات الصيانة المرسَلة من الموظف الحالي.
 
+### Request
+
+لا يحتاج Body.
+
+### Success Response `200`
+
+```json
+{
+  "success": true,
+  "total": 3,
+  "data": [
+    {
+      "id": 18,
+      "problem_date": "2024/07/01",
+      "problem_description": "الشاشة تعرض خطوطاً رأسية عند التشغيل",
+      "status_label": "قيد الانتظار",
+      "created_at": "2024/07/02 - 10:30 AM",
+      "submitted_by": { ... },
+      "asset": { ... },
+      "department": { ... },
+      "administration": { ... },
+      "sector": { ... }
+    }
+  ]
+}
 ```
-PATCH /addresses/{address}/default
-```
 
-## Path Parameters
+---
+
+## 8. Maintenance Requests — تفاصيل طلب واحد
+
+**`GET /maintenance-requests/{id}`**
+
+جلب تفاصيل طلب صيانة محدد يخص الموظف الحالي.
+
+### Path Parameters
 
 | المعامل | النوع | الوصف |
-|---|---|---|
-| `address` | integer | معرّف العنوان المراد تعيينه كافتراضي |
+|---------|-------|-------|
+| `id` | integer | معرّف الطلب |
 
-***
+### Success Response `200`
 
-## Success Response (200)
+نفس بنية الطلب أعلاه داخل `data` مباشرةً.
 
-```json
-{
-    "status": true,
-    "message": "تم تعيين العنوان الافتراضي",
-    "address": {
-        "id": 6,
-        "customer_id": 3,
-        "title": "العمل",
-        "description": "صنعاء - شارع الستين",
-        "latitude": 15.369445,
-        "longitude": 44.191007,
-        "status": "inactive",
-        "is_default": true,
-        "created_at": "2026-04-17T10:00:00.000000Z",
-        "updated_at": "2026-04-19T22:10:00.000000Z"
-    }
-}
-```
+### Error Responses
 
-> **ملاحظة:** يتم تعيين `is_default: false` على جميع العناوين الأخرى تلقائياً قبل تعيين الجديد.
+| الكود | الحالة | الرسالة |
+|-------|--------|---------|
+| `404` | غير موجود | `"الطلب غير موجود"` |
 
-***
+---
 
-## Error Response (403)
+## قيم ثابتة (Enums)
 
-```json
-{
-    "status": false,
-    "message": "غير مصرح"
-}
-```
+### حالة طلب الصيانة — `status_label`
 
-***
+| القيمة الداخلية | التسمية المعروضة |
+|----------------|-----------------|
+| `pending` | قيد الانتظار |
+| `postponed` | مؤجل |
+| *(قيم أخرى حسب النظام)* | - |
 
-# ملخص الـ Endpoints
+### منصب الموظف — `position`
 
-| Method | Endpoint | الوصف |
-|---|---|---|
-| `GET` | `/addresses` | جلب جميع العناوين |
-| `POST` | `/addresses` | إضافة عنوان جديد |
-| `PATCH` | `/addresses/{address}/status` | تبديل حالة العنوان |
-| `PATCH` | `/addresses/{address}/default` | تعيين عنوان افتراضي |
+| القيمة |
+|--------|
+| `office_manager` |
+| *(قيم أخرى حسب النظام)* |
 
-***
+---
 
-# Address Object
+## أخطاء عامة
 
-| الحقل | النوع | الوصف |
-|---|---|---|
-| `id` | integer | معرّف العنوان |
-| `customer_id` | integer | معرّف العميل |
-| `title` | string | عنوان مختصر |
-| `description` | string\|null | وصف تفصيلي |
-| `latitude` | numeric | خط العرض |
-| `longitude` | numeric | خط الطول |
-| `status` | string | `active` أو `inactive` |
-| `is_default` | boolean | هل هو العنوان الافتراضي |
-| `created_at` | datetime | تاريخ الإنشاء |
-| `updated_at` | datetime | تاريخ آخر تعديل |
+| الكود | السبب | الرسالة |
+|-------|-------|---------|
+| `401` | لا يوجد توكن | `"الجلسة مفقودة"` |
+| `401` | توكن غير صالح | `"الجلسة غير صالحة"` |
+| `403` | User-Agent مشبوه | `"طلب غير مسموح"` |
+| `403` | حظر بسبب نشاط مشبوه | `"تم حظر هذا الحساب مؤقتاً"` |
+| `413` | Body أكبر من 10KB | `"حجم الطلب كبير جداً"` |
+| `415` | Content-Type خاطئ | `"Content-Type يجب أن يكون application/json"` |
+| `429` | تجاوز حد الطلبات | `"تم تجاوز الحد المسموح به من الطلبات"` |
+
+---
+
+## حدود Rate Limiting
+
+| النوع | الحد | النافذة الزمنية | يُطبَّق على |
+|-------|------|----------------|------------|
+| `login` | 5 طلبات | دقيقة واحدة | `POST /auth/login` |
+| `read` | 60 طلباً | دقيقة واحدة | جميع GET endpoints |
+| `write` | 20 طلباً | دقيقة واحدة | POST /auth/logout, POST /maintenance-requests |
+| `global` | 100 طلب | دقيقة واحدة | جميع الطلبات |
+
+> بعد 10 مخالفات متراكمة → حظر تلقائي لمدة ساعة كاملة.

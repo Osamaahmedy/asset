@@ -81,6 +81,19 @@ class AssetResource extends Resource
                         ->nullable()
                         ->placeholder('اختر الموظف (اختياري)'),
                                     ]),
+                    Forms\Components\ToggleButtons::make('is_personal')
+                       ->label('ملكية الأصل')
+                       ->options([
+                           false => 'تابع للوزارة',
+                           true  => 'شخصي',
+                       ])
+                       ->default(false)
+                       ->inline()
+                       ->required()
+                       ->colors([
+                                              'danger'  => 'شخصي',
+                           'success' => 'تابع للوزارة',
+                       ]),
 
             Forms\Components\Section::make('التواريخ والصيانة')
                 ->icon('heroicon-o-calendar')
@@ -174,6 +187,14 @@ class AssetResource extends Resource
                     ->badge()
                     ->color('warning')
                     ->default('—'),
+                BadgeColumn::make('is_personal')
+                    ->label('ملكية الأصل')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'شخصي' : 'تابع للوزارة')
+                    ->colors([
+                        'warning' => fn (bool $state): bool => $state,
+                        'success' => fn (bool $state): bool => !$state,
+                    ])
+                    ->sortable(),
                 TextColumn::make('assetType.name')
                     ->label('نوع الأصل')
                     ->sortable()

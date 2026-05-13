@@ -18,7 +18,8 @@ Route::middleware(['api.security'])->group(function () {
         Route::middleware(['api.throttle:read'])
             ->get('/auth/profile', [AuthController::class, 'profile']);
 
-        Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::middleware(['api.throttle:write'])
+            ->post('/auth/logout', [AuthController::class, 'logout']);
 
         // Assets — قراءة فقط
         Route::middleware(['api.throttle:read'])->group(function () {

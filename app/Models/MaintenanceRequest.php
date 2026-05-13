@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MaintenanceRequest extends Model
 {
@@ -71,9 +72,9 @@ class MaintenanceRequest extends Model
     public static function statusOptions(): array
     {
         return [
-            'pending'   => '🕐 قيد الانتظار',
-            'postponed' => '⏳ مؤجل',
-            'completed' => '✅ مكتمل',
+            'pending'   => ' قيد الانتظار',
+            'postponed' => ' مؤجل',
+            'completed' => 'مكتمل',
         ];
     }
 
@@ -83,6 +84,11 @@ class MaintenanceRequest extends Model
     {
         return $this->belongsTo(Asset::class);
     }
+    public function externalRequest(): HasOne
+{
+    return $this->hasOne(ExternalMaintenanceRequest::class);
+}
+
 
     public function employee()
     {

@@ -4,15 +4,20 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MaintenanceRequestResource\Pages;
 use App\Models\MaintenanceRequest;
+use App\Models\ExternalMaintenanceRequest;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea as FormTextarea;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -40,7 +45,7 @@ class MaintenanceRequestResource extends Resource
                         ->searchable()
                         ->preload()
                         ->required()
-                        ->disabled() // لا يُعدَّل من الباك
+                        ->disabled()
                         ->columnSpanFull(),
 
                     Select::make('employee_id')
@@ -159,6 +164,14 @@ class MaintenanceRequestResource extends Resource
                         default     => 'gray',
                     }),
 
+                // ✅ عمود حالة الطلب الخارجي — في مكانه الصحيح هنا
+                TextColumn::make('externalRequest.status')
+                    ->label('الترحيل الخارجي')
+                    ->badge()
+                    ->placeholder('—')
+                    ->formatStateUsing(fn($state) => ExternalMaintenanceRequest::statusOptions()[$state] ?? $state)
+                    ->color(fn($state) => ExternalMaintenanceRequest::statusColors()[$state] ?? 'gray'),
+
                 TextColumn::make('problem_date')
                     ->label('تاريخ المشكلة')
                     ->date('Y/m/d')
@@ -196,6 +209,50 @@ class MaintenanceRequestResource extends Resource
                     ->options(MaintenanceRequest::priorityOptions()),
             ])
             ->actions([
+                // ✅ Action الترحيل الخارجي — في مكانه الصحيح هنا
+                Action::make('transfer_external')
+                    ->label('ترحيل خارجي')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('warning')
+                    ->visible(fn($record) => !$record->externalRequest()->exists())
+                    ->modalHeading('إنشاء طلب ترحيل خارجي')
+                    ->modalDescription('سيتم إنشاء طلب صيانة خارجية مرتبط بهذا الطلب.')
+                    ->modalWidth('2xl')
+                    ->form([
+                        FormTextarea::make('technical_description')
+                            ->label('الوصف الفني')
+                            ->required()
+                            ->rows(4)
+                            ->placeholder('اكتب الوصف الفني للعطل...'),
+
+                        TextInput::make('estimated_amount')
+                            ->label('المبلغ التقديري (ريال)')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0)
+                            ->suffix('ر.ي'),
+
+                        FormTextarea::make('required_parts')
+                            ->label('القطع المطلوبة')
+                            ->rows(3)
+                            ->placeholder('اذكر القطع أو المواد المطلوبة...'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        ExternalMaintenanceRequest::create([
+                            'maintenance_request_id' => $record->id,
+                            'technical_description'  => $data['technical_description'],
+                            'estimated_amount'       => $data['estimated_amount'],
+                            'required_parts'         => $data['required_parts'] ?? null,
+                            'status'                 => 'pending',
+                            'created_by'             => auth()->id(),
+                        ]);
+
+                        Notification::make()
+                            ->title('تم إنشاء الطلب الخارجي بنجاح')
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make()->label('تعديل'),
                 Tables\Actions\DeleteAction::make()->label('حذف'),
             ])
@@ -210,34 +267,24 @@ class MaintenanceRequestResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListMaintenanceRequests::route('/'),
-            'edit'   => Pages\EditMaintenanceRequest::route('/{record}/edit'),
+            'index' => Pages\ListMaintenanceRequests::route('/'),
+            'edit'  => Pages\EditMaintenanceRequest::route('/{record}/edit'),
         ];
     }
 
     public static function canCreate(): bool
     {
-        return false; // الطلبات تأتي فقط من الـ API
+        return false;
     }
-
-    // public static function canViewAny(): bool
-    // {
-    //     return auth()->user()?->can('عرض طلبات الصيانة') ?? false;
-    // }
-
-    // public static function canEdit(Model $record): bool
-    // {
-    //     return auth()->user()?->can('تعديل طلبات الصيانة') ?? false;
-    // }
-
-    // public static function canDelete(Model $record): bool
-    // {
-    //     return auth()->user()?->can('حذف طلبات الصيانة') ?? false;
-    // }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['asset.department.administration.sector', 'asset.employee', 'employee']);
+            ->with([
+                'asset.department.administration.sector',
+                'asset.employee',
+                'employee',
+                'externalRequest', // ✅ لازم تضيفه هنا عشان العمود الجانبي يشتغل بدون N+1
+            ]);
     }
 }
