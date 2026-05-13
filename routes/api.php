@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\MaintenanceRequestController;
 
-// ─── حماية عامة لكل الـ API ───────────────────────────────────────────────────
 Route::middleware(['api.security'])->group(function () {
 
     // ─── Login: أشد قيوداً (5 محاولات فقط) ──────────────────────────────────
@@ -19,8 +18,7 @@ Route::middleware(['api.security'])->group(function () {
         Route::middleware(['api.throttle:read'])
             ->get('/auth/profile', [AuthController::class, 'profile']);
 
-        Route::middleware(['api.throttle:write'])
-            ->post('/auth/logout', [AuthController::class, 'logout']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
 
         // Assets — قراءة فقط
         Route::middleware(['api.throttle:read'])->group(function () {

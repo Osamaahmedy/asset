@@ -43,11 +43,6 @@ class AuthController extends Controller
                     'name'       => $employee->name,
                     'phone'      => $employee->phone,
                     'position'   => $employee->position,
-                    'priority'   => $employee->priority,
-                    'department' => [
-                        'id'   => $employee->department?->id,
-                        'name' => $employee->department?->name,
-                    ],
                 ],
             ],
         ]);
@@ -68,7 +63,6 @@ class AuthController extends Controller
                 'name'     => $employee->name,
                 'phone'    => $employee->phone,
                 'position' => $employee->position,
-                'priority' => $employee->priority,
                 'department' => [
                     'id'   => $employee->department?->id,
                     'name' => $employee->department?->name,
