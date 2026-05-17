@@ -64,7 +64,6 @@ class ExternalMaintenanceRequestResource extends Resource
                     TextInput::make('estimated_amount')
                         ->label('المبلغ التقديري (ريال)')
                         ->numeric()
-                        ->required()
                         ->minValue(0)
                         ->suffix('ر.ي')
                         ->placeholder('0.00'),

@@ -225,12 +225,7 @@ class MaintenanceRequestResource extends Resource
                             ->rows(4)
                             ->placeholder('اكتب الوصف الفني للعطل...'),
 
-                        TextInput::make('estimated_amount')
-                            ->label('المبلغ التقديري (ريال)')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0)
-                            ->suffix('ر.ي'),
+
 
                         FormTextarea::make('required_parts')
                             ->label('القطع المطلوبة')
@@ -241,7 +236,6 @@ class MaintenanceRequestResource extends Resource
                         ExternalMaintenanceRequest::create([
                             'maintenance_request_id' => $record->id,
                             'technical_description'  => $data['technical_description'],
-                            'estimated_amount'       => $data['estimated_amount'],
                             'required_parts'         => $data['required_parts'] ?? null,
                             'status'                 => 'pending',
                             'created_by'             => auth()->id(),
