@@ -149,3 +149,4 @@ private function formatAsset(Asset $asset, bool $detailed = false): array
     return $data;
 }
 }
+
