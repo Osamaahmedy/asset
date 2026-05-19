@@ -139,44 +139,89 @@ Content-Type: application/json
 ```json
 {
     "success": true,
-    "total": 1,
+    "total": 2,
     "data": [
         {
-            "id": 27,
-            "name": "phone",
-            "serial_number": "ASSET-6A044F4460C12",
-            "price": "5000.00",
-            "vendor": "ali",
-            "purchase_date": "2026-05-13",
+            "id": 24,
+            "name": "lenove-e456",
+            "serial_number": "ASSET-69E3743262318",
+            "price": "5.00",
+            "vendor": "ص",
+            "purchase_date": "2026-04-18",
+            "ownership": {
+                "is_personal": false,
+                "label": "تابع للوزارة"
+            },
             "type": {
-                "id": 2,
-                "name": "Tv"
+                "id": 1,
+                "name": "lab"
             },
             "department": {
-                "id": 6,
-                "name": "الموارد "
+                "id": 3,
+                "name": "new"
             },
             "administration": {
-                "id": 2,
-                "name": "التصديق"
+                "id": 1,
+                "name": "5"
             },
             "sector": {
-                "id": 2,
-                "name": "قطاع البعثات"
+                "id": 1,
+                "name": "45"
             },
             "assigned_to": {
+                "id": 1,
+                "name": "سامر",
+                "phone": "718323599",
+                "position": "employee"
+            },
+            "maintenance": {
+                "status": "✅ Good",
+                "last_date": "2026-05-11",
+                "cycle_months": 3,
+                "due_date": "2026-07-18"
+            },
+            "created_at": "2026/04/18"
+        },
+        {
+            "id": 23,
+            "name": "Osama Ahmed",
+            "serial_number": "ASSET-69E36FE3069AA",
+            "price": "864.00",
+            "vendor": "5465",
+            "purchase_date": "2026-04-18",
+            "ownership": {
+                "is_personal": true,
+                "label": "شخصي"
+            },
+            "type": {
+                "id": 1,
+                "name": "lab"
+            },
+            "department": {
                 "id": 3,
-                "name": "مجد معاذ",
-                "phone": "782532962",
+                "name": "new"
+            },
+            "administration": {
+                "id": 1,
+                "name": "5"
+            },
+            "sector": {
+                "id": 1,
+                "name": "45"
+            },
+            "assigned_to": {
+                "id": 2,
+                "name": "حسام",
+                "phone": "7183235995",
                 "position": "office_manager"
             },
             "maintenance": {
                 "status": "✅ Good",
-                "last_date": "2026-05-13",
-                "cycle_months": 3,
-                "due_date": "2026-08-13"
+                "last_date": "2026-05-11",
+                "cycle_months": 9,
+                "due_date": "2026-07-18"
             },
-            "created_at": "2026/05/13"
+            "created_at": "2026/04/18"
         }
     ]
 }

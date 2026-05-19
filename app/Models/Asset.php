@@ -134,4 +134,20 @@ public function maintenanceRequests()
 {
     return $this->hasMany(MaintenanceRequest::class);
 }
+
+public function scopeVisibleTo($query, $employee)
+{
+    return $query->where(function ($q) use ($employee) {
+        // أصول المكتب العامة
+        $q->where(function ($inner) use ($employee) {
+            $inner->where('department_id', $employee->department_id)
+                  ->where('is_personal', false);
+        })
+        // أو أصول شخصية تخص هذا الموظف تحديداً
+        ->orWhere(function ($inner) use ($employee) {
+            $inner->where('is_personal', true)
+                  ->where('employee_id', $employee->id);
+        });
+    });
+}
 }
