@@ -10,6 +10,8 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 class User extends Authenticatable implements FilamentUser
 {
+    use \App\Traits\LogsActivityInArabic;
+
     use HasFactory, Notifiable, HasRoles;
 public function departments()
 {

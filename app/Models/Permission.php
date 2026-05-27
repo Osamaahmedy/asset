@@ -7,6 +7,8 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
 
 class Permission extends SpatiePermission
 {
+    use \App\Traits\LogsActivityInArabic;
+
     use HasFactory;
 
     // لو حبيت تضيف خصائص أو دوال خاصة بالصلاحية تقدر تضيفها هنا

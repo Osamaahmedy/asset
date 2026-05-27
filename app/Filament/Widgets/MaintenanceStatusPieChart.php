@@ -10,9 +10,13 @@ use Filament\Widgets\ChartWidget;
 
 class MaintenanceStatusPieChart extends ChartWidget
 {
-    protected static ?string $heading = 'توزيع حالات الصيانة';
     protected static ?int $sort = 3;
     protected int|string|array $columnSpan = 'half';
+
+    public function getHeading(): ?string
+    {
+        return __('messages.widget.maintenance_status_distribution');
+    }
 
     //public static function canView(): bool
    // {
@@ -26,12 +30,13 @@ class MaintenanceStatusPieChart extends ChartWidget
 
         $assets = Asset::whereIn('department_id', $userDepartmentIds)->get();
 
+        $isAr = app()->getLocale() === 'ar';
         $statusMap = [
-            '✅ Good'        => ['label' => 'جيدة ✅',            'color' => '#16a34a'],
-            '🔔 < 2 Months' => ['label' => 'أقل من شهرين 🔔',   'color' => '#84cc16'],
-            '⚠️ < 1 Month'  => ['label' => 'أقل من شهر ⚠️',    'color' => '#facc15'],
-            '⚠️ < 1 Week'   => ['label' => 'أقل من أسبوع ⚠️',  'color' => '#f97316'],
-            '❌ Overdue'     => ['label' => 'متأخرة ❌',          'color' => '#ef4444'],
+            '✅ Good'                  => ['label' => $isAr ? 'جيدة ✅' : 'Good ✅',                     'color' => '#16a34a'],
+            '🔔 Less than two months' => ['label' => $isAr ? 'أقل من شهرين 🔔' : 'Less than 2 months 🔔',  'color' => '#84cc16'],
+            '⚠️ Less than a month'    => ['label' => $isAr ? 'أقل من شهر ⚠️' : 'Less than a month ⚠️',   'color' => '#facc15'],
+            '⚠️ Less than a week'     => ['label' => $isAr ? 'أقل من أسبوع ⚠️' : 'Less than a week ⚠️', 'color' => '#f97316'],
+            '❌ Overdue'               => ['label' => $isAr ? 'متأخرة ❌' : 'Overdue ❌',                   'color' => '#ef4444'],
         ];
 
         $counts = array_fill_keys(array_keys($statusMap), 0);

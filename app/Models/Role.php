@@ -7,6 +7,8 @@ use Spatie\Permission\Models\Role as SpatieRole;
 
 class Role extends SpatieRole
 {
+    use \App\Traits\LogsActivityInArabic;
+
     use HasFactory;
 
     // لو حبيت تضيف خصائص أو دوال خاصة بـ Role تقدر تضيفها هنا

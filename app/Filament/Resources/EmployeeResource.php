@@ -21,64 +21,65 @@ class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-    protected static ?string $navigationGroup  = 'إدارة الموارد البشرية';
-    protected static ?string $navigationLabel  = 'الموظفون';
-    protected static ?string $pluralModelLabel = 'الموظفون';
-    protected static ?string $modelLabel       = 'موظف';
     protected static ?string $navigationIcon   = 'heroicon-o-users';
     protected static ?int    $navigationSort   = 1;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.employees'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.hr_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.employee'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.employees'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('المعلومات الأساسية')
+            Forms\Components\Section::make(__('messages.section.employee_info'))
                 ->icon('heroicon-o-user')
                 ->columns(2)
                 ->schema([
                     TextInput::make('name')
-                        ->label('اسم الموظف')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->maxLength(255)
                         ->columnSpanFull()
-                        ->placeholder('مثال: أحمد محمد'),
+                        ->placeholder(__('messages.field.name')),
 
                    TextInput::make('phone')
-                       ->label('رقم الهاتف')
-                       ->tel()
-                       ->maxLength(20)
-                       ->unique(table: 'employees', column: 'phone', ignoreRecord: true) // ← هذا الناقص
-                       ->placeholder('مثال: 777123456'),
+                        ->label(__('messages.field.phone'))
+                        ->tel()
+                        ->maxLength(20)
+                        ->unique(table: 'employees', column: 'phone', ignoreRecord: true) // ← هذا الناقص
+                        ->placeholder(__('messages.field.phone')),
 
                     TextInput::make('password')
-                        ->label('كلمة المرور')
+                        ->label(__('messages.field.password'))
                         ->password()
                         ->revealable()
                         ->required(fn($livewire) => $livewire instanceof Pages\CreateEmployee)
                         ->dehydrated(fn($state) => filled($state))
                         ->maxLength(255)
-                        ->placeholder('أدخل كلمة المرور'),
+                        ->placeholder(__('messages.field.password')),
                 ]),
 
-            Forms\Components\Section::make('الوظيفة والمكتب')
+            Forms\Components\Section::make(__('messages.section.job_office'))
                 ->icon('heroicon-o-building-office')
                 ->columns(2)
                 ->schema([
                     Select::make('position')
-                        ->label('المنصب')
+                        ->label(__('messages.field.position'))
                         ->options(Employee::positionOptions())
                         ->required()
                         ->default('employee')
                         ->native(false),
 
                     Select::make('priority')
-                        ->label('الأولوية')
+                        ->label(__('messages.field.priority'))
                         ->options(Employee::priorityOptions())
                         ->required()
                         ->default('medium')
                         ->native(false),
 
                     Select::make('department_id')
-                        ->label('المكتب')
+                        ->label(__('messages.field.office'))
                         ->options(function () {
                             return Department::with('administration.sector')
                                 ->get()
@@ -90,7 +91,7 @@ class EmployeeResource extends Resource
                         ->preload()
                         ->required()
                         ->columnSpanFull()
-                        ->placeholder('اختر المكتب'),
+                        ->placeholder(__('messages.field.office')),
                 ]),
         ]);
     }
@@ -100,40 +101,40 @@ class EmployeeResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('department.administration.sector.name')
-                    ->label('القطاع')
+                    ->label(__('messages.field.sector'))
                     ->sortable()
                     ->searchable()
                     ->badge()
                     ->color('gray'),
 
                 TextColumn::make('department.administration.name')
-                    ->label('الإدارة')
+                    ->label(__('messages.field.administration'))
                     ->sortable()
                     ->searchable()
                     ->badge()
                     ->color('info'),
 
                 TextColumn::make('department.name')
-                    ->label('المكتب')
+                    ->label(__('messages.field.office'))
                     ->sortable()
                     ->searchable()
                     ->badge()
                     ->color('success'),
 
                 TextColumn::make('name')
-                    ->label('اسم الموظف')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('phone')
-                    ->label('الهاتف')
+                    ->label(__('messages.field.phone'))
                     ->searchable()
                     ->copyable()
                     ->icon('heroicon-m-phone'),
 
                 TextColumn::make('position')
-                    ->label('المنصب')
+                    ->label(__('messages.field.position'))
                     ->badge()
                     ->formatStateUsing(fn($state) => Employee::positionOptions()[$state] ?? $state)
                     ->color(fn($state) => match($state) {
@@ -143,7 +144,7 @@ class EmployeeResource extends Resource
                     }),
 
                 TextColumn::make('priority')
-                    ->label('الأولوية')
+                    ->label(__('messages.field.priority'))
                     ->badge()
                     ->formatStateUsing(fn($state) => Employee::priorityOptions()[$state] ?? $state)
                     ->color(fn($state) => match($state) {
@@ -154,38 +155,36 @@ class EmployeeResource extends Resource
                     }),
 
                 TextColumn::make('assets_count')
-                    ->label('الأصول المسندة')
+                    ->label(__('messages.field.assigned_assets'))
                     ->counts('assets')
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإضافة')
+                    ->label(__('messages.field.created_at'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('حذف')
                     ->before(function ($record, $action) {
                         if ($record->assets()->exists()) {
                             $action->cancel();
                             \Filament\Notifications\Notification::make()
-                                ->title('لا يمكن حذف الموظف')
-                                ->body('لدى الموظف أصول مرتبطة، يرجى إعادة تعيينها أولاً.')
+                                ->title(__('messages.action.no'))
+                                ->body(__('messages.action.no'))
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-users')
-            ->emptyStateHeading('لا يوجد موظفون')
-            ->emptyStateDescription('ابدأ بإضافة موظف جديد.');
+            ->emptyStateHeading(__('messages.empty.no_employees'));
     }
 
     public static function getPages(): array

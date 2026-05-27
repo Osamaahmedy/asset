@@ -11,9 +11,13 @@ use Filament\Widgets\ChartWidget;
 
 class MonthlyMaintenanceFlowChart extends ChartWidget
 {
-    protected static ?string $heading = 'تدفق الصيانات الشهرية (آخر 12 شهر)';
     protected static ?int $sort = 4;
     protected int|string|array $columnSpan = 'full';
+
+    public function getHeading(): ?string
+    {
+        return __('messages.widget.monthly_maintenance_flow');
+    }
 
   //  public static function canView(): bool
     //{
@@ -26,12 +30,13 @@ class MonthlyMaintenanceFlowChart extends ChartWidget
             ->departments()->pluck('departments.id')->toArray();
 
         $months  = collect(range(11, 0))->map(fn($i) => now()->subMonths($i));
-        $labels  = $months->map(fn($m) => $m->locale('ar')->translatedFormat('M Y'))->toArray();
+        $labels  = $months->map(fn($m) => $m->locale(app()->getLocale())->translatedFormat('M Y'))->toArray();
 
+        $isAr = app()->getLocale() === 'ar';
         $statuses = [
-            'Maintenance Completed' => ['label' => 'اكتملت ✅',   'color' => '#10b981'],
-            'Postponed'             => ['label' => 'مؤجلة ⏳',    'color' => '#f59e0b'],
-            'Pending'               => ['label' => 'انتظار 🕐',   'color' => '#ef4444'],
+            'Maintenance Completed' => ['label' => $isAr ? 'اكتملت ✅' : 'Completed ✅',   'color' => '#10b981'],
+            'Postponed'             => ['label' => $isAr ? 'مؤجلة ⏳' : 'Postponed ⏳',    'color' => '#f59e0b'],
+            'Pending'               => ['label' => $isAr ? 'انتظار 🕐' : 'Pending 🕐',   'color' => '#ef4444'],
         ];
 
         $datasets = [];
@@ -79,7 +84,7 @@ class MonthlyMaintenanceFlowChart extends ChartWidget
                 'y' => [
                     'beginAtZero' => true,
                     'grid'        => ['color' => 'rgba(0,0,0,0.06)'],
-                    'title'       => ['display' => true, 'text' => 'عدد الصيانات'],
+                    'title'       => ['display' => true, 'text' => __('messages.widget.maintenances_count')],
                 ],
                 'x' => [
                     'grid' => ['display' => false],

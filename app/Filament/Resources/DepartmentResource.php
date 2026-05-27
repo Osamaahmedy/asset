@@ -20,26 +20,27 @@ class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
 
-    protected static ?string $navigationGroup  = 'إدارة الأصول';
-    protected static ?string $navigationLabel  = 'المكاتب';       // ← تغيير العرض فقط
-    protected static ?string $pluralModelLabel = 'المكاتب';
-    protected static ?string $modelLabel       = 'مكتب';
     protected static ?string $navigationIcon   = 'heroicon-o-building-office-2';
     protected static ?int    $navigationSort   = 3;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.departments'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.department'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.departments'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات المكتب')
+            Forms\Components\Section::make(__('messages.section.office_info'))
                 ->icon('heroicon-o-building-office-2')
                 ->schema([
                     Select::make('administration_id')
-                        ->label('الإدارة')
+                        ->label(__('messages.field.administration'))
                         ->relationship('administration', 'name')
                         ->searchable()
                         ->preload()
                         ->required()
-                        ->placeholder('اختر الإدارة')
+                        ->placeholder(__('messages.field.administration'))
                         // عرض القطاع مع اسم الإدارة للتوضيح
                         ->getOptionLabelFromRecordUsing(
                             fn(Administration $record) =>
@@ -47,11 +48,11 @@ class DepartmentResource extends Resource
                         ),
 
                     TextInput::make('name')
-                        ->label('اسم المكتب')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255)
-                        ->placeholder('مثال: مكتب شؤون الموظفين'),
+                        ->placeholder(__('messages.field.name')),
                 ]),
         ]);
     }
@@ -61,58 +62,56 @@ class DepartmentResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('administration.sector.name')
-                    ->label('القطاع')
+                    ->label(__('messages.field.sector'))
                     ->sortable()
                     ->searchable()
                     ->badge()
                     ->color('gray'),
 
                 TextColumn::make('administration.name')
-                    ->label('الإدارة')
+                    ->label(__('messages.field.administration'))
                     ->sortable()
                     ->searchable()
                     ->badge()
                     ->color('info'),
 
                 TextColumn::make('name')
-                    ->label('اسم المكتب')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('assets_count')
-                    ->label('عدد الأصول')
+                    ->label(__('messages.field.asset_count'))
                     ->counts('assets')
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('حذف')
                     ->before(function ($record, $action) {
                         if ($record->assets()->exists()) {
                             $action->cancel();
                             \Filament\Notifications\Notification::make()
-                                ->title('لا يمكن حذف المكتب')
-                                ->body('يحتوي المكتب على أصول مرتبطة.')
+                                ->title(__('messages.action.no'))
+                                ->body(__('messages.action.no'))
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-building-office-2')
-            ->emptyStateHeading('لا توجد مكاتب')
-            ->emptyStateDescription('ابدأ بإضافة مكتب جديد.');
+            ->emptyStateHeading(__('messages.empty.no_departments'));
     }
 
     public static function getPages(): array

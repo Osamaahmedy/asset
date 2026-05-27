@@ -8,25 +8,32 @@ use Filament\Widgets\ChartWidget;
 
 class AssetStatusChart extends ChartWidget
 {
-    protected static ?string $heading = 'نظرة عامة على الصيانة حسب الحالة والقسم والشهر';
     protected static ?int $sort = 1;
     protected int|string|array $columnSpan = 'full';
 
-    // ── صلاحية العرض ─────────────────────────────────────────────────────────
-    ////public static function canView(): bool
-    //{
-     //   return auth()->user()?->can('عرض إحصائيات الصيانة') ?? false;
-    //}
+    public function getHeading(): ?string
+    {
+        return __('messages.widget.maintenance_status_overview');
+    }
 
     protected function getData(): array
     {
+        $isAr = app()->getLocale() === 'ar';
+
+        $goodLabel = $isAr ? '✅ جيدة' : '✅ Good';
+        $twoMonthsLabel = $isAr ? '🔔 أقل من شهرين' : '🔔 < 2 Months';
+        $oneMonthLabel = $isAr ? '⚠️ أقل من شهر' : '⚠️ < 1 Month';
+        $oneWeekLabel = $isAr ? '⚠️ أقل من أسبوع' : '⚠️ < 1 Week';
+        $overdueLabel = $isAr ? '❌ متأخرة' : '❌ Overdue';
+        $unknownLabel = $isAr ? '❓ غير معروف' : '❓ Unknown';
+
         $statusLabels = [
-            '✅ جيدة'            => '#16a34a',
-            '🔔 أقل من شهرين'   => '#84cc16',
-            '⚠️ أقل من شهر'    => '#facc15',
-            '⚠️ أقل من أسبوع'  => '#f97316',
-            '❌ متأخرة'          => '#ef4444',
-            '❓ غير معروف'       => '#9ca3af',
+            $goodLabel      => '#16a34a',
+            $twoMonthsLabel => '#84cc16',
+            $oneMonthLabel  => '#facc15',
+            $oneWeekLabel   => '#f97316',
+            $overdueLabel   => '#ef4444',
+            $unknownLabel   => '#9ca3af',
         ];
 
         // ── فلتر حسب أقسام المستخدم ──────────────────────────────────────────
@@ -47,22 +54,21 @@ class AssetStatusChart extends ChartWidget
 
         foreach ($assetsQuery->get() as $asset) {
             $status = match ($asset->maintenance_status) {
-                '✅ Good'        => '✅ جيدة',
-                '🔔 < 2 Months' => '🔔 أقل من شهرين',
-                '⚠️ < 1 Month'  => '⚠️ أقل من شهر',
-                '⚠️ < 1 Week'   => '⚠️ أقل من أسبوع',
-                '❌ Overdue'     => '❌ متأخرة',
-                default          => $asset->maintenance_status
-                    ?? '❓ غير معروف',
+                '✅ Good'        => $goodLabel,
+                '🔔 < 2 Months' => $twoMonthsLabel,
+                '⚠️ < 1 Month'  => $oneMonthLabel,
+                '⚠️ < 1 Week'   => $oneWeekLabel,
+                '❌ Overdue'     => $overdueLabel,
+                default          => $asset->maintenance_status ?? $unknownLabel,
             };
 
             if (isset($statusCounts[$status])) {
                 $statusCounts[$status]++;
             } else {
-                $statusCounts['❓ غير معروف']++;
+                $statusCounts[$unknownLabel]++;
             }
 
-            $department = $asset->department?->name ?? 'غير محدد';
+            $department = $asset->department?->name ?? ($isAr ? 'غير محدد' : 'Unassigned');
             $departmentCounts[$department] = ($departmentCounts[$department] ?? 0) + 1;
 
             if ($asset->last_maintenance_date) {
@@ -72,14 +78,14 @@ class AssetStatusChart extends ChartWidget
         }
 
         $monthLabels = array_map(
-            fn($m) => Carbon::create()->month($m)->locale('ar')->translatedFormat('F'),
+            fn($m) => Carbon::create()->month($m)->locale(app()->getLocale())->translatedFormat('F'),
             range(1, 12)
         );
 
         return [
             'datasets' => [
                 [
-                    'label'           => 'حسب الحالة',
+                    'label'           => __('messages.widget.by_status'),
                     'data'            => array_values($statusCounts),
                     'backgroundColor' => array_values($statusLabels),
                     'borderRadius'    => 8,
@@ -87,7 +93,7 @@ class AssetStatusChart extends ChartWidget
                     'yAxisID'         => 'y1',
                 ],
                 [
-                    'label'           => 'حسب القسم',
+                    'label'           => __('messages.widget.by_department'),
                     'data'            => array_values($departmentCounts),
                     'backgroundColor' => '#0ea5e9',
                     'type'            => 'bar',
@@ -96,7 +102,7 @@ class AssetStatusChart extends ChartWidget
                     'yAxisID'         => 'y2',
                 ],
                 [
-                    'label'              => 'النظرة الشهرية',
+                    'label'              => __('messages.widget.monthly_view'),
                     'data'               => array_values($monthlyCounts),
                     'type'               => 'line',
                     'stepped'            => true,
@@ -143,7 +149,7 @@ class AssetStatusChart extends ChartWidget
                 ],
                 'title' => [
                     'display' => true,
-                    'text'    => 'تقرير الصيانة (بيانات مباشرة)',
+                    'text'    => __('messages.widget.maintenance_report'),
                     'font'    => ['size' => 18, 'weight' => 'bold'],
                     'color'   => '#111827',
                 ],
@@ -155,7 +161,7 @@ class AssetStatusChart extends ChartWidget
                     'grid'        => ['drawOnChartArea' => true],
                     'title'       => [
                         'display' => true,
-                        'text'    => 'عدد الأصول حسب الحالة',
+                        'text'    => __('messages.widget.assets_count_by_status'),
                         'font'    => ['size' => 13],
                     ],
                 ],
@@ -165,7 +171,7 @@ class AssetStatusChart extends ChartWidget
                     'grid'        => ['drawOnChartArea' => false],
                     'title'       => [
                         'display' => true,
-                        'text'    => 'عدد الأصول حسب القسم',
+                        'text'    => __('messages.widget.assets_count_by_department'),
                         'font'    => ['size' => 13],
                     ],
                 ],

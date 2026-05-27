@@ -18,32 +18,33 @@ class AdministrationResource extends Resource
 {
     protected static ?string $model = Administration::class;
 
-    protected static ?string $navigationGroup  = 'إدارة الأصول';
-    protected static ?string $navigationLabel  = 'الإدارات';
-    protected static ?string $pluralModelLabel = 'الإدارات';
-    protected static ?string $modelLabel       = 'إدارة';
     protected static ?string $navigationIcon   = 'heroicon-o-building-library';
     protected static ?int    $navigationSort   = 2;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.administrations'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.administration'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.administrations'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات الإدارة')
+            Forms\Components\Section::make(__('messages.section.admin_info'))
                 ->icon('heroicon-o-building-library')
                 ->schema([
                     Select::make('sector_id')
-                        ->label('القطاع')
+                        ->label(__('messages.field.sector'))
                         ->relationship('sector', 'name')
                         ->searchable()
                         ->preload()
                         ->required()
-                        ->placeholder('اختر القطاع'),
+                        ->placeholder(__('messages.field.sector')),
 
                     TextInput::make('name')
-                        ->label('اسم الإدارة')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->maxLength(255)
-                        ->placeholder('مثال: الإدارة العامة للموارد البشرية'),
+                        ->placeholder(__('messages.field.name')),
                 ]),
         ]);
     }
@@ -53,51 +54,49 @@ class AdministrationResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('sector.name')
-                    ->label('القطاع')
+                    ->label(__('messages.field.sector'))
                     ->sortable()
                     ->searchable()
                     ->badge()
                     ->color('gray'),
 
                 TextColumn::make('name')
-                    ->label('اسم الإدارة')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('departments_count')
-                    ->label('عدد المكاتب')
+                    ->label(__('messages.field.office_count'))
                     ->counts('departments')
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('حذف')
                     ->before(function ($record, $action) {
                         if ($record->departments()->exists()) {
                             $action->cancel();
                             \Filament\Notifications\Notification::make()
-                                ->title('لا يمكن حذف الإدارة')
-                                ->body('تحتوي الإدارة على مكاتب مرتبطة.')
+                                ->title(__('messages.action.no'))
+                                ->body(__('messages.action.no'))
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-building-library')
-            ->emptyStateHeading('لا توجد إدارات')
-            ->emptyStateDescription('ابدأ بإضافة إدارة جديدة.');
+            ->emptyStateHeading(__('messages.empty.no_administrations'));
     }
 
     public static function getPages(): array

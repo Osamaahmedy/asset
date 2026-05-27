@@ -19,29 +19,29 @@ class RoleResource extends Resource
     protected static ?string $model = Role::class;
 
     protected static ?string $navigationIcon   = 'heroicon-o-shield-check';
-    protected static ?string $navigationLabel  = 'الأدوار';
-    protected static ?string $pluralModelLabel = 'الأدوار';
-    protected static ?string $modelLabel       = 'دور';
-    protected static ?string $navigationGroup  = 'إدارة النظام';
     protected static ?int    $navigationSort   = 3;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.roles'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.system_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.role'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.roles'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات الدور')
+            Forms\Components\Section::make(__('messages.section.role_info'))
                 ->icon('heroicon-o-shield-check')
                 ->schema([
                     TextInput::make('name')
-                        ->label('اسم الدور')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255)
-                        ->placeholder('مثال: مدير القسم'),
+                        ->placeholder(__('messages.field.name')),
                 ]),
 
-            Forms\Components\Section::make('الصلاحيات')
+            Forms\Components\Section::make(__('messages.section.permissions'))
                 ->icon('heroicon-o-lock-closed')
-                ->description('اختر الصلاحيات التي يملكها هذا الدور')
                 ->schema([
                     Forms\Components\CheckboxList::make('permissions')
                         ->relationship('permissions', 'name')
@@ -59,33 +59,32 @@ class RoleResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('اسم الدور')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('permissions.name')
-                    ->label('الصلاحيات')
+                    ->label(__('messages.section.permissions'))
                     ->badge()
                     ->separator(',')
                     ->limitList(4),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->date('Y/m/d')
                     ->sortable(),
             ])
             ->defaultSort('name', 'asc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-shield-check')
-            ->emptyStateHeading('لا توجد أدوار')
-            ->emptyStateDescription('ابدأ بإضافة دور جديد وتحديد صلاحياته.');
+            ->emptyStateHeading(__('messages.empty.no_roles'));
     }
 
     public static function getPages(): array

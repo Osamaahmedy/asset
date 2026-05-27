@@ -12,6 +12,7 @@ class ActivityLog extends Model
         'model_id',
         'model_name',
         'department_name',
+        'user_name',
         'description',
     ];
 
@@ -43,6 +44,7 @@ class ActivityLog extends Model
         'model_id'        => $model->getKey(),
         'model_name'      => $modelName,
         'department_name' => $departmentName,
+        'user_name'       => auth()->user()?->name ?? 'نظام (System)',
         'description'     => $description,
     ]);
 }

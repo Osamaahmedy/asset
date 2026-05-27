@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MaintenanceRequest extends Model
 {
+    use \App\Traits\LogsActivityInArabic;
+
     protected $fillable = [
         'asset_id',
         'employee_id',
@@ -22,59 +24,52 @@ class MaintenanceRequest extends Model
         'problem_date' => 'date',
     ];
 
-    // عند اكتمال الطلب → حدّث تاريخ آخر صيانة للأصل
     protected static function booted(): void
-{
-    // إنشاء طلب جديد
-    static::created(function ($request) {
-        $priorityLabel = \App\Models\Employee::priorityOptions()[$request->priority] ?? $request->priority;
+    {
+        // ─── إنشاء ───────────────────────────────────────────────────────────
+        static::created(function ($request) {
+            if (in_array($request->status, ['pending', 'postponed'])) {
+                $request->asset?->update([
+                    'status' => \App\Models\Asset::STATUS_MAINTENANCE,
+                ]);
+            }
+        });
 
-        ActivityLog::log(
-            action: 'maintenance',
-            model: $request->asset,   // نسجّل على الأصل
-            description: "طلب صيانة جديد من: {$request->employee?->name} — الأولوية: {$priorityLabel} — {$request->problem_description}"
-        );
-    });
-
-    // تغيير الحالة إلى مكتمل → حدّث آخر صيانة
-    static::updated(function ($request) {
-        if ($request->isDirty('status') && $request->status === 'completed') {
-            $request->asset?->update([
-                'last_maintenance_date' => now()->toDateString(),
-            ]);
-
-            ActivityLog::log(
-                action: 'maintenance',
-                model: $request->asset,
-                description: "اكتمل طلب الصيانة — مرسل الطلب: {$request->employee?->name}"
-            );
-        }
-
-        if ($request->isDirty('status') && $request->status === 'postponed') {
-            ActivityLog::log(
-                action: 'updated',
-                model: $request->asset,
-                description: "تم تأجيل طلب الصيانة — مرسل الطلب: {$request->employee?->name}"
-            );
-        }
-    });
-}
+        // ─── تعديل ───────────────────────────────────────────────────────────
+        static::updated(function ($request) {
+            if ($request->wasChanged('status')) {
+                if ($request->status === 'completed') {
+                    $asset = $request->asset;
+                    if ($asset) {
+                        $asset->update([
+                            'last_maintenance_date' => now()->toDateString(),
+                            'status' => $asset->employee_id ? \App\Models\Asset::STATUS_IN_USE : \App\Models\Asset::STATUS_AVAILABLE,
+                        ]);
+                    }
+                } elseif (in_array($request->status, ['pending', 'postponed'])) {
+                    $request->asset?->update([
+                        'status' => \App\Models\Asset::STATUS_MAINTENANCE,
+                    ]);
+                }
+            }
+        });
+    }
 
     public static function priorityOptions(): array
     {
         return [
-            'high'   => 'عالي',
-            'medium' => 'متوسط',
-            'low'    => 'منخفض',
+            'high'   => __('messages.priority.high'),
+            'medium' => __('messages.priority.medium'),
+            'low'    => __('messages.priority.low'),
         ];
     }
 
     public static function statusOptions(): array
     {
         return [
-            'pending'   => ' قيد الانتظار',
-            'postponed' => ' مؤجل',
-            'completed' => 'مكتمل',
+            'pending'   => __('messages.status.pending'),
+            'postponed' => __('messages.status.postponed'),
+            'completed' => __('messages.status.completed'),
         ];
     }
 

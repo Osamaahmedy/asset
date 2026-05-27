@@ -11,14 +11,13 @@ use Filament\Widgets\ChartWidget;
 
 class AssetMaintenanceGanttChart extends ChartWidget
 {
-    protected static ?string $heading = 'جدول صيانة الأصول (الأشهر الستة القادمة)';
     protected static ?int $sort = 5;
     protected int|string|array $columnSpan = 'full';
 
-   // public static function canView(): bool
-    //{
-   //     return auth()->user()?->can('عرض جدول الصيانة') ?? false;
-   // }
+    public function getHeading(): ?string
+    {
+        return __('messages.widget.maintenance_schedule');
+    }
 
     protected function getData(): array
     {
@@ -65,7 +64,7 @@ class AssetMaintenanceGanttChart extends ChartWidget
 
         return [
             'datasets' => [[
-                'label' => 'الفترة حتى الصيانة',
+                'label' => __('messages.widget.period_until_maintenance'),
                 'data'  => $data,
             ]],
             'labels' => $labels,
@@ -76,6 +75,10 @@ class AssetMaintenanceGanttChart extends ChartWidget
 
     protected function getOptions(): ?array
     {
+        $tooltipLabelJs = app()->getLocale() === 'ar'
+            ? 'function(ctx){ const d=ctx.raw.x; return " من: "+d[0]+" ← إلى: "+d[1]; }'
+            : 'function(ctx){ const d=ctx.raw.x; return " From: "+d[0]+" → To: "+d[1]; }';
+
         return [
             'indexAxis'           => 'y',   // ← هذا يجعله أفقياً كالجانت
             'responsive'          => true,
@@ -85,7 +88,7 @@ class AssetMaintenanceGanttChart extends ChartWidget
                 'tooltip' => [
                     'enabled'   => true,
                     'callbacks' => [
-                        'label' => 'function(ctx){ const d=ctx.raw.x; return " من: "+d[0]+" → إلى: "+d[1]; }',
+                        'label' => $tooltipLabelJs,
                     ],
                 ],
             ],
@@ -99,7 +102,7 @@ class AssetMaintenanceGanttChart extends ChartWidget
                     ],
                     'min'   => Carbon::today()->format('Y-m-d'),
                     'max'   => Carbon::today()->addMonths(6)->format('Y-m-d'),
-                    'title' => ['display' => true, 'text' => 'التاريخ'],
+                    'title' => ['display' => true, 'text' => __('messages.widget.date')],
                     'grid'  => ['color' => 'rgba(0,0,0,0.06)'],
                 ],
                 'y' => [

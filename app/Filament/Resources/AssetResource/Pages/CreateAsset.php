@@ -4,20 +4,7 @@ namespace App\Filament\Resources\AssetResource\Pages;
 
 use App\Filament\Resources\AssetResource;
 use Filament\Resources\Pages\CreateRecord;
-use App\Models\ActivityLog;
-
 class CreateAsset extends CreateRecord
 {
     protected static string $resource = AssetResource::class;
-
-    protected function afterCreate(): void
-    {
-        ActivityLog::create([
-            'action'          => 'Asset created',
-            'model_type'      => $this->record::class,
-            'model_id'        => $this->record->id,
-            'model_name'      => $this->record->name,
-            'department_name' => $this->record->department?->name,
-        ]);
-    }
 }

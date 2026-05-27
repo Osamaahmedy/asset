@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Hash;
 
 class Employee extends Model
 {
+    use \App\Traits\LogsActivityInArabic;
+
     protected $fillable = [
         'name',
         'phone',
@@ -45,17 +47,17 @@ class Employee extends Model
     public static function priorityOptions(): array
     {
         return [
-            'high'   => 'عالي',
-            'medium' => 'متوسط',
-            'low'    => 'منخفض',
+            'high'   => __('messages.priority.high'),
+            'medium' => __('messages.priority.medium'),
+            'low'    => __('messages.priority.low'),
         ];
     }
 
     public static function positionOptions(): array
     {
         return [
-            'employee'       => 'موظف',
-            'office_manager' => 'مدير مكتب',
+            'employee'       => __('messages.position.employee'),
+            'office_manager' => __('messages.position.office_manager'),
         ];
     }
 

@@ -19,22 +19,23 @@ class ExternalMaintenanceRequestResource extends Resource
 {
     protected static ?string $model = ExternalMaintenanceRequest::class;
 
-    protected static ?string $navigationGroup  = 'إدارة الأصول';
-    protected static ?string $navigationLabel  = 'الطلبات الخارجية';
-    protected static ?string $pluralModelLabel = 'الطلبات الخارجية';
-    protected static ?string $modelLabel       = 'طلب خارجي';
     protected static ?string $navigationIcon   = 'heroicon-o-arrow-top-right-on-square';
     protected static ?int    $navigationSort   = 4;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.external_requests'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.external_request'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.external_requests'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('بيانات الطلب الأصلي')
+            Forms\Components\Section::make(__('messages.section.original_request_data'))
                 ->icon('heroicon-o-clipboard-document-list')
                 ->collapsed()
                 ->schema([
                     Select::make('maintenance_request_id')
-                        ->label('طلب الصيانة')
+                        ->label(__('messages.resource.maintenance_request'))
                         ->relationship(
                             'maintenanceRequest',
                             'id',
@@ -50,37 +51,36 @@ class ExternalMaintenanceRequestResource extends Resource
                         ->columnSpanFull(),
                 ]),
 
-            Forms\Components\Section::make('تفاصيل الطلب الخارجي')
+            Forms\Components\Section::make(__('messages.section.external_request_details'))
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->columns(2)
                 ->schema([
                     Textarea::make('technical_description')
-                        ->label('الوصف الفني')
+                        ->label(__('messages.field.technical_description'))
                         ->required()
                         ->rows(4)
                         ->columnSpanFull()
-                        ->placeholder('اكتب الوصف الفني للعطل أو المشكلة التي تستوجب الصيانة الخارجية...'),
+                        ->placeholder(__('messages.field.technical_description')),
 
                     TextInput::make('estimated_amount')
-                        ->label('المبلغ التقديري (ريال)')
+                        ->label(__('messages.field.estimated_amount'))
                         ->numeric()
                         ->minValue(0)
-                        ->suffix('ر.ي')
                         ->placeholder('0.00'),
 
                     Textarea::make('required_parts')
-                        ->label('القطع المطلوبة')
+                        ->label(__('messages.field.required_parts'))
                         ->rows(3)
-                        ->placeholder('اذكر القطع أو المواد المطلوبة لإتمام الصيانة...')
+                        ->placeholder(__('messages.field.required_parts'))
                         ->columnSpanFull(),
                 ]),
 
-            Forms\Components\Section::make('الحالة والملاحظات')
+            Forms\Components\Section::make(__('messages.section.status_notes'))
                 ->icon('heroicon-o-chat-bubble-left-right')
                 ->columns(2)
                 ->schema([
                     Select::make('status')
-                        ->label('الحالة')
+                        ->label(__('messages.field.status'))
                         ->options(ExternalMaintenanceRequest::statusOptions())
                         ->native(false)
                         ->required()
@@ -88,13 +88,13 @@ class ExternalMaintenanceRequestResource extends Resource
                         ->default('pending'),
 
                     TextInput::make('admin_note')
-                        ->label('ملاحظة الإدارة')
-                        ->placeholder('ملاحظة اختيارية...'),
+                        ->label(__('messages.field.notes'))
+                        ->placeholder(__('messages.field.notes')),
 
                     Textarea::make('rejection_reason')
-                        ->label('سبب الرفض')
+                        ->label(__('messages.field.notes'))
                         ->rows(3)
-                        ->placeholder('يُملأ في حالة الرفض فقط...')
+                        ->placeholder(__('messages.field.notes'))
                         ->columnSpanFull()
                         ->visible(fn($get) => $get('status') === 'rejected'),
                 ]),
@@ -106,75 +106,74 @@ class ExternalMaintenanceRequestResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('maintenanceRequest.asset.department.administration.sector.name')
-                    ->label('القطاع')
+                    ->label(__('messages.field.sector'))
                     ->badge()
                     ->color('gray')
                     ->sortable(),
 
                 TextColumn::make('maintenanceRequest.asset.department.administration.name')
-                    ->label('الإدارة')
+                    ->label(__('messages.field.administration'))
                     ->badge()
                     ->color('info')
                     ->sortable(),
 
                 TextColumn::make('maintenanceRequest.asset.name')
-                    ->label('الأصل')
+                    ->label(__('messages.field.asset'))
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('maintenanceRequest.employee.name')
-                    ->label('مرسل الطلب')
+                    ->label(__('messages.field.employee'))
                     ->searchable(),
 
                 TextColumn::make('technical_description')
-                    ->label('الوصف الفني')
+                    ->label(__('messages.field.technical_description'))
                     ->limit(40)
                     ->tooltip(fn($record) => $record->technical_description)
                     ->searchable(),
 
                 TextColumn::make('estimated_amount')
-                    ->label('المبلغ التقديري')
+                    ->label(__('messages.field.estimated_amount'))
                     ->money('YER')
                     ->sortable(),
 
                 TextColumn::make('required_parts')
-                    ->label('القطع المطلوبة')
+                    ->label(__('messages.field.required_parts'))
                     ->limit(30)
                     ->placeholder('—')
                     ->toggleable(),
 
                 TextColumn::make('status')
-                    ->label('الحالة')
+                    ->label(__('messages.field.status'))
                     ->badge()
                     ->formatStateUsing(fn($state) => ExternalMaintenanceRequest::statusOptions()[$state] ?? $state)
                     ->color(fn($state) => ExternalMaintenanceRequest::statusColors()[$state] ?? 'gray'),
 
                 TextColumn::make('creator.name')
-                    ->label('أُنشئ بواسطة')
+                    ->label(__('messages.field.by_user'))
                     ->placeholder('—')
                     ->toggleable(),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 SelectFilter::make('status')
-                    ->label('الحالة')
+                    ->label(__('messages.field.status'))
                     ->options(ExternalMaintenanceRequest::statusOptions()),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-arrow-top-right-on-square')
-            ->emptyStateHeading('لا توجد طلبات خارجية')
-            ->emptyStateDescription('لم يتم إنشاء أي طلب ترحيل خارجي بعد.');
+            ->emptyStateHeading(__('messages.empty.no_external_requests'));
     }
 
     public static function getPages(): array

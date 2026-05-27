@@ -23,23 +23,24 @@ class MaintenanceResource extends Resource
 {
     protected static ?string $model = Maintenance::class;
 
-    protected static ?string $navigationLabel  = 'الصيانات';
-    protected static ?string $pluralModelLabel = 'الصيانات';
-    protected static ?string $modelLabel       = 'صيانة';
-    protected static ?string $navigationGroup  = 'إدارة الأصول';
     protected static ?string $navigationIcon   = 'heroicon-o-wrench-screwdriver';
     protected static ?int    $navigationSort   = 2;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.maintenances'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.maintenance'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.maintenances'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
 
-            Forms\Components\Section::make('معلومات الصيانة')
+            Forms\Components\Section::make(__('messages.section.maintenance_info'))
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->columns(2)
                 ->schema([
                     Select::make('asset_id')
-                        ->label('الأصل')
+                        ->label(__('messages.field.asset'))
                         ->relationship('asset', 'name')
                         ->searchable()
                         ->preload()
@@ -47,28 +48,28 @@ class MaintenanceResource extends Resource
                         ->columnSpanFull(),
 
                     DatePicker::make('maintenance_date')
-                        ->label('تاريخ الصيانة')
+                        ->label(__('messages.field.maintenance_date'))
                         ->required()
                         ->default(now())
                         ->native(false)
                         ->displayFormat('Y/m/d'),
 
                     Select::make('status')
-                        ->label('الحالة')
+                        ->label(__('messages.field.status'))
                         ->options([
-                            'Maintenance Completed' => '✅ اكتملت الصيانة',
-                            'Postponed'            => '⏳ مؤجلة',
-                            'Pending'              => '🕐 قيد الانتظار',
+                            'Maintenance Completed' => '✅ ' . __('messages.status.completed'),
+                            'Postponed'            => '⏳ ' . __('messages.status.postponed'),
+                            'Pending'              => '🕐 ' . __('messages.status.pending'),
                         ])
                         ->required()
                         ->default('Maintenance Completed')
                         ->native(false),
 
                     Textarea::make('note')
-                        ->label('ملاحظات')
+                        ->label(__('messages.field.notes'))
                         ->rows(3)
                         ->columnSpanFull()
-                        ->placeholder('أضف أي ملاحظات تتعلق بهذه الصيانة...'),
+                        ->placeholder(__('messages.field.notes')),
                 ]),
 
 
@@ -81,37 +82,37 @@ class MaintenanceResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('asset.name')
-                    ->label('الأصل')
+                    ->label(__('messages.field.asset'))
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 TextColumn::make('asset.department.name')
-                    ->label('القسم')
+                    ->label(__('messages.field.department'))
                     ->badge()
                     ->sortable(),
 
                 TextColumn::make('maintenance_date')
-                    ->label('تاريخ الصيانة')
+                    ->label(__('messages.field.maintenance_date'))
                     ->date('Y/m/d')
                     ->sortable(),
 
                 BadgeColumn::make('status')
-                    ->label('الحالة')
+                    ->label(__('messages.field.status'))
                     ->colors([
                         'success' => 'Maintenance Completed',
                         'warning' => 'Postponed',
                         'danger'  => 'Pending',
                     ])
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'Maintenance Completed' => '✅ اكتملت',
-                        'Postponed'            => '⏳ مؤجلة',
-                        'Pending'              => '🕐 انتظار',
+                        'Maintenance Completed' => '✅ ' . __('messages.status.completed'),
+                        'Postponed'            => '⏳ ' . __('messages.status.postponed'),
+                        'Pending'              => '🕐 ' . __('messages.status.pending'),
                         default                => $state,
                     }),
 
                 TextColumn::make('note')
-                    ->label('الملاحظات')
+                    ->label(__('messages.field.notes'))
                     ->limit(40)
                     ->placeholder('—')
                     ->toggleable(),
@@ -119,23 +120,22 @@ class MaintenanceResource extends Resource
             ->defaultSort('maintenance_date', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('الحالة')
+                    ->label(__('messages.field.status'))
                     ->options([
-                        'Maintenance Completed' => 'اكتملت الصيانة',
-                        'Postponed'            => 'مؤجلة',
-                        'Pending'              => 'قيد الانتظار',
+                        'Maintenance Completed' => __('messages.status.completed'),
+                        'Postponed'            => __('messages.status.postponed'),
+                        'Pending'              => __('messages.status.pending'),
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-wrench-screwdriver')
-            ->emptyStateHeading('لا توجد صيانات')
-            ->emptyStateDescription('ابدأ بإضافة سجل صيانة جديد لأحد الأصول.');
+            ->emptyStateHeading(__('messages.empty.no_maintenances'));
     }
 
     public static function getPages(): array

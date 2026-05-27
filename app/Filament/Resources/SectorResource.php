@@ -17,25 +17,26 @@ class SectorResource extends Resource
 {
     protected static ?string $model = Sector::class;
 
-    protected static ?string $navigationGroup  = 'إدارة الأصول';
-    protected static ?string $navigationLabel  = 'القطاعات';
-    protected static ?string $pluralModelLabel = 'القطاعات';
-    protected static ?string $modelLabel       = 'قطاع';
     protected static ?string $navigationIcon   = 'heroicon-o-globe-alt';
     protected static ?int    $navigationSort   = 1;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.sectors'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.sector'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.sectors'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات القطاع')
+            Forms\Components\Section::make(__('messages.section.sector_info'))
                 ->icon('heroicon-o-globe-alt')
                 ->schema([
                     TextInput::make('name')
-                        ->label('اسم القطاع')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255)
-                        ->placeholder('مثال: قطاع الخدمات'),
+                        ->placeholder(__('messages.field.name')),
                 ]),
         ]);
     }
@@ -45,44 +46,42 @@ class SectorResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('اسم القطاع')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('administrations_count')
-                    ->label('عدد الإدارات')
+                    ->label(__('messages.field.admin_count'))
                     ->counts('administrations')
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('حذف')
                     ->before(function ($record, $action) {
                         if ($record->administrations()->exists()) {
                             $action->cancel();
                             \Filament\Notifications\Notification::make()
-                                ->title('لا يمكن حذف القطاع')
-                                ->body('يحتوي القطاع على إدارات مرتبطة.')
+                                ->title(__('messages.action.no'))
+                                ->body(__('messages.action.no'))
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-globe-alt')
-            ->emptyStateHeading('لا توجد قطاعات')
-            ->emptyStateDescription('ابدأ بإضافة قطاع جديد.');
+            ->emptyStateHeading(__('messages.empty.no_sectors'));
     }
 
     public static function getPages(): array

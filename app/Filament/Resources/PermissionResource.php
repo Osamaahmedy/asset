@@ -18,24 +18,25 @@ class PermissionResource extends Resource
     protected static ?string $model = Permission::class;
 
     protected static ?string $navigationIcon   = 'heroicon-o-lock-closed';
-    protected static ?string $navigationLabel  = 'الصلاحيات';
-    protected static ?string $pluralModelLabel = 'الصلاحيات';
-    protected static ?string $modelLabel       = 'صلاحية';
-    protected static ?string $navigationGroup  = 'إدارة النظام';
     protected static ?int    $navigationSort   = 2;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.permissions'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.system_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.permission'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.permissions'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات الصلاحية')
+            Forms\Components\Section::make(__('messages.section.permission_info'))
                 ->icon('heroicon-o-lock-closed')
                 ->schema([
                     TextInput::make('name')
-                        ->label('اسم الصلاحية')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255)
-                        ->placeholder('مثال: عرض الأصول'),
+                        ->placeholder(__('messages.field.name')),
                 ]),
         ]);
     }
@@ -45,27 +46,26 @@ class PermissionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('اسم الصلاحية')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->date('Y/m/d')
                     ->sortable(),
             ])
             ->defaultSort('name', 'asc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-lock-closed')
-            ->emptyStateHeading('لا توجد صلاحيات')
-            ->emptyStateDescription('ابدأ بإضافة صلاحية جديدة.');
+            ->emptyStateHeading(__('messages.empty.no_permissions'));
     }
 
     public static function getPages(): array

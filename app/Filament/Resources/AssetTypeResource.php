@@ -17,25 +17,26 @@ class AssetTypeResource extends Resource
 {
     protected static ?string $model = AssetType::class;
 
-    protected static ?string $navigationGroup  = 'إدارة الأصول';
-    protected static ?string $navigationLabel  = 'أنواع الأصول';
-    protected static ?string $pluralModelLabel = 'أنواع الأصول';
-    protected static ?string $modelLabel       = 'نوع أصل';
     protected static ?string $navigationIcon   = 'heroicon-o-tag';
     protected static ?int    $navigationSort   = 4;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.asset_types'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.asset_type'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.asset_types'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('معلومات النوع')
+            Forms\Components\Section::make(__('messages.section.type_info'))
                 ->icon('heroicon-o-tag')
                 ->schema([
                     TextInput::make('name')
-                        ->label('اسم النوع')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255)
-                        ->placeholder('مثال: حاسوب، طابعة، جهاز عرض'),
+                        ->placeholder(__('messages.field.name')),
                 ]),
         ]);
     }
@@ -45,44 +46,42 @@ class AssetTypeResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('اسم النوع')
+                    ->label(__('messages.field.name'))
                     ->sortable()
                     ->searchable()
                     ->weight('bold'),
 
                 TextColumn::make('assets_count')
-                    ->label('عدد الأصول')
+                    ->label(__('messages.field.asset_count'))
                     ->counts('assets')
                     ->badge()
                     ->color('primary'),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
-                    ->label('حذف')
                     ->before(function ($record, $action) {
                         if ($record->assets()->exists()) {
                             $action->cancel();
                             \Filament\Notifications\Notification::make()
-                                ->title('لا يمكن حذف النوع')
-                                ->body('يوجد أصول مرتبطة بهذا النوع.')
+                                ->title(__('messages.action.no'))
+                                ->body(__('messages.action.no'))
                                 ->danger()
                                 ->send();
                         }
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-tag')
-            ->emptyStateHeading('لا توجد أنواع')
-            ->emptyStateDescription('ابدأ بإضافة نوع أصل جديد.');
+            ->emptyStateHeading(__('messages.empty.no_types'));
     }
 
     public static function getPages(): array

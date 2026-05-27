@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AssetDeletionConfirmation extends Model
 {
+    use \App\Traits\LogsActivityInArabic;
+
     protected $fillable = [
         'asset_id',
         'requested_by',

@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "bezhansalleh/filament-language-switch": "*",
         "fakerphp/faker": "^1.24",
         "filament/actions": "^3.3",
         "filament/filament": "^3.3",
@@ -15,6 +16,7 @@
         "laravel/tinker": "^2.10.1",
         "pxlrbt/filament-excel": "^2.4",
         "saade/filament-fullcalendar": "^3.2",
+        "simplesoftwareio/simple-qrcode": "*",
         "spatie/laravel-medialibrary": "^11.13",
         "spatie/laravel-permission": "^6.19",
         "spatie/laravel-translatable": "^6.11"

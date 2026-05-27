@@ -37,7 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('الأصول')
+            ->brandName(__('brand'))
             ->login()
             ->colors([
                 'primary' => Color::Amber,
@@ -68,7 +68,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->userMenuItems([
+                'profile' => \Filament\Navigation\MenuItem::make()
+                    ->label(fn () => __('messages.profile.title'))
+                    ->url(fn (): string => \App\Filament\Pages\EditProfile::getUrl())
+                    ->icon('heroicon-o-user-circle'),
+            ])
+            ->databaseNotifications()
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k']);
     }
 
 

@@ -10,9 +10,13 @@ use Filament\Widgets\ChartWidget;
 
 class AssetsByDepartmentChart extends ChartWidget
 {
-    protected static ?string $heading = 'توزيع الأصول حسب الأقسام';
     protected static ?int $sort = 2;
     protected int|string|array $columnSpan = 'half';
+
+    public function getHeading(): ?string
+    {
+        return __('messages.widget.assets_distribution_by_department');
+    }
 
    // public static function canView(): bool
    // {
@@ -24,10 +28,13 @@ class AssetsByDepartmentChart extends ChartWidget
         $userDepartmentIds = auth()->user()
             ->departments()->pluck('departments.id')->toArray();
 
+        $isAr = app()->getLocale() === 'ar';
+        $unassigned = $isAr ? 'غير محدد' : 'Unassigned';
+
         $data = Asset::with('department')
             ->whereIn('department_id', $userDepartmentIds)
             ->get()
-            ->groupBy(fn($a) => $a->department?->name ?? 'غير محدد')
+            ->groupBy(fn($a) => $a->department?->name ?? $unassigned)
             ->map->count();
 
         $colors = [

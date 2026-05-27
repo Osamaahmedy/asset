@@ -19,29 +19,37 @@ class ActivityLogResource extends Resource
 {
     protected static ?string $model = ActivityLog::class;
 
-    protected static ?string $navigationLabel = 'سجل الأنشطة';
-    protected static ?string $pluralModelLabel = 'سجلات الأنشطة';
-    protected static ?string $modelLabel = 'نشاط';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = 'التقارير والسجلات';
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.activity_logs'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.reports'); }
+    public static function getModelLabel(): string { return __('messages.resource.activity_log'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.activity_logs'); }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('model_name')
-                    ->label('اسم الأصل / الصيانة')
+                    ->label(__('messages.field.name'))
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->placeholder('— محذوف —')
+                    ->placeholder('—')
                     ->description(fn(ActivityLog $record) => $record->department_name
-                        ? 'القسم: ' . $record->department_name
+                        ? __('messages.field.office') . ': ' . $record->department_name
                         : null),
 
+                TextColumn::make('user_name')
+                    ->label(__('messages.field.by_user'))
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('System')
+                    ->icon('heroicon-o-user'),
+
                 BadgeColumn::make('action')
-                    ->label('نوع الإجراء')
+                    ->label(__('messages.field.action_type'))
                     ->sortable()
                     ->searchable()
                     ->colors([
@@ -51,62 +59,61 @@ class ActivityLogResource extends Resource
                         'info'    => fn($state) => in_array($state, ['maintenance', 'صيانة']),
                     ])
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'created'     => '✅ إنشاء',
-                        'updated'     => '✏️ تعديل',
-                        'deleted'     => '🗑️ حذف',
-                        'maintenance' => '🔧 صيانة',
+                        'created'     => '✅ ' . __('messages.action.create'),
+                        'updated'     => '✏️ ' . __('messages.action.edit'),
+                        'deleted'     => '🗑️ ' . __('messages.action.delete'),
+                        'maintenance' => '🔧 ' . __('messages.resource.maintenance'),
                         default       => $state,
                     }),
 
                 BadgeColumn::make('model_type')
-                    ->label('نوع العنصر')
+                    ->label(__('messages.field.item_type'))
                     ->sortable()
                     ->formatStateUsing(fn($state) => match (class_basename($state)) {
-    'Asset'              => '📦 أصل',
-    'Maintenance'        => '🔧 صيانة',
-    'MaintenanceRequest' => '📋 طلب صيانة',
-    default              => class_basename($state),
-})
-->colors([
-    'primary' => fn($state) => class_basename($state) === 'Asset',
-    'warning' => fn($state) => class_basename($state) === 'Maintenance',
-    'info'    => fn($state) => class_basename($state) === 'MaintenanceRequest',
-]),
+                        'Asset'              => '📦 ' . __('messages.resource.asset'),
+                        'Maintenance'        => '🔧 ' . __('messages.resource.maintenance'),
+                        'MaintenanceRequest' => '📋 ' . __('messages.resource.maintenance_request'),
+                        default              => class_basename($state),
+                    })
+                    ->colors([
+                        'primary' => fn($state) => class_basename($state) === 'Asset',
+                        'warning' => fn($state) => class_basename($state) === 'Maintenance',
+                        'info'    => fn($state) => class_basename($state) === 'MaintenanceRequest',
+                    ]),
 
                 TextColumn::make('description')
-                    ->label('تفاصيل إضافية')
+                    ->label(__('messages.field.description'))
                     ->wrap()
                     ->searchable()
                     ->placeholder('—')
                     ->toggleable(),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإجراء')
+                    ->label(__('messages.field.action_date'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('action')
-                    ->label('نوع الإجراء')
+                    ->label(__('messages.field.action_type'))
                     ->options([
-                        'created'     => 'إنشاء',
-                        'updated'     => 'تعديل',
-                        'deleted'     => 'حذف',
-                        'maintenance' => 'صيانة',
+                        'created'     => __('messages.action.create'),
+                        'updated'     => __('messages.action.edit'),
+                        'deleted'     => __('messages.action.delete'),
+                        'maintenance' => __('messages.resource.maintenance'),
                     ]),
 
                 Tables\Filters\SelectFilter::make('model_type')
-                    ->label('نوع العنصر')
+                    ->label(__('messages.field.item_type'))
                     ->options([
-                        Asset::class       => 'أصل',
-                        Maintenance::class => 'صيانة',
-                        MaintenanceRequest::class => 'طلب صيانة',
+                        Asset::class       => __('messages.resource.asset'),
+                        Maintenance::class => __('messages.resource.maintenance'),
+                        MaintenanceRequest::class => __('messages.resource.maintenance_request'),
                     ]),
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateIcon('heroicon-o-clipboard-document')
-            ->emptyStateHeading('لا توجد سجلات')
-            ->emptyStateDescription('ستظهر هنا جميع الأنشطة المتعلقة بأصولك وصياناتها.');
+            ->emptyStateHeading(__('messages.empty.no_activity_logs'));
     }
 
     public static function getPages(): array
@@ -148,26 +155,22 @@ class ActivityLogResource extends Resource
         return $query->whereRaw('0 = 1');
     }
 
-    $userDepartmentNames = auth()->user()
-        ->departments()
-        ->pluck('departments.name')
-        ->toArray();
+    $user = auth()->user();
+    
+    // إذا كان المستخدم لا يملك أقسام مرتبطة به (مثل مدير النظام)، اعرض له كل شيء
+    $userDepartmentNames = $user->departments()->pluck('departments.name')->toArray();
 
     if (empty($userDepartmentNames)) {
-        return $query->whereRaw('0 = 1');
+        return $query;
     }
 
-    return $query->where(function ($q) use ($userDepartmentNames) {
+    return $query->where(function ($q) use ($userDepartmentNames, $user) {
 
         // ── سجلات محفوظة مع department_name (الطريقة الجديدة) ──────────────
         $q->whereIn('department_name', $userDepartmentNames);
 
         // ── سجلات قديمة قبل الـ migration (بدون department_name) ───────────
-        // نعرضها عبر join مع الأصول الموجودة حالياً
-        $userDepartmentIds = auth()->user()
-            ->departments()
-            ->pluck('departments.id')
-            ->toArray();
+        $userDepartmentIds = $user->departments()->pluck('departments.id')->toArray();
 
         $q->orWhere(function ($sub) use ($userDepartmentIds) {
             $sub->whereNull('department_name')

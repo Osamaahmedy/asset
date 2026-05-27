@@ -8,6 +8,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Maintenance extends Model implements HasMedia
 {
+    use \App\Traits\LogsActivityInArabic;
+
     use InteractsWithMedia;
 
     protected $fillable = [
@@ -21,61 +23,35 @@ class Maintenance extends Model implements HasMedia
     {
         // ─── إنشاء ───────────────────────────────────────────────────────────
         static::created(function ($maintenance) {
-            $statusLabel = self::statusLabel($maintenance->status);
-
-            ActivityLog::log(
-                action: 'maintenance',
-                model: $maintenance,
-                description: "تم إنشاء سجل صيانة جديد — الحالة: {$statusLabel} — التاريخ: {$maintenance->maintenance_date}"
-            );
+            if ($maintenance->status === 'Pending' || $maintenance->status === 'In Progress') {
+                $maintenance->asset?->update([
+                    'status' => \App\Models\Asset::STATUS_MAINTENANCE,
+                ]);
+            }
         });
 
         // ─── تعديل ───────────────────────────────────────────────────────────
         static::updated(function ($maintenance) {
-            $changes = [];
-
-            if ($maintenance->isDirty('status')) {
-                $old = self::statusLabel($maintenance->getOriginal('status'));
-                $new = self::statusLabel($maintenance->status);
-                $changes[] = "الحالة: {$old} ← {$new}";
-            }
-
-            if ($maintenance->isDirty('maintenance_date')) {
-                $old = $maintenance->getOriginal('maintenance_date');
-                $new = $maintenance->maintenance_date;
-                $changes[] = "التاريخ: {$old} ← {$new}";
-            }
-
-            if ($maintenance->isDirty('note')) {
-                $changes[] = "تم تعديل الملاحظة";
-            }
-
-            $description = !empty($changes)
-                ? implode(' | ', $changes)
-                : 'تم تعديل سجل الصيانة';
-
-            ActivityLog::log(
-                action: 'updated',
-                model: $maintenance,
-                description: $description
-            );
-
-            // تحديث تاريخ آخر صيانة للأصل عند الاكتمال
-            if ($maintenance->isDirty('status') && $maintenance->status === 'Maintenance Completed') {
-                $maintenance->asset?->update([
-                    'last_maintenance_date' => $maintenance->maintenance_date,
-                ]);
+            // تحديث تاريخ آخر صيانة للأصل وحالة الأصل عند الاكتمال
+            if ($maintenance->wasChanged('status')) {
+                if ($maintenance->status === 'Maintenance Completed') {
+                    $asset = $maintenance->asset;
+                    if ($asset) {
+                        $asset->update([
+                            'last_maintenance_date' => $maintenance->maintenance_date,
+                            'status' => $asset->employee_id ? \App\Models\Asset::STATUS_IN_USE : \App\Models\Asset::STATUS_AVAILABLE,
+                        ]);
+                    }
+                } elseif (in_array($maintenance->status, ['Pending', 'In Progress'])) {
+                    $maintenance->asset?->update([
+                        'status' => \App\Models\Asset::STATUS_MAINTENANCE,
+                    ]);
+                }
             }
         });
 
         // ─── حذف ─────────────────────────────────────────────────────────────
         static::deleted(function ($maintenance) {
-            ActivityLog::log(
-                action: 'deleted',
-                model: $maintenance,
-                description: "تم حذف سجل الصيانة — التاريخ: {$maintenance->maintenance_date}"
-            );
-
             // تحديث تاريخ آخر صيانة بعد الحذف
             $latest = $maintenance->asset
                 ?->maintenances()
@@ -106,6 +82,13 @@ class Maintenance extends Model implements HasMedia
     public function asset()
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function spareParts()
+    {
+        return $this->belongsToMany(SparePart::class, 'maintenance_spare_part')
+                    ->withPivot('quantity', 'cost')
+                    ->withTimestamps();
     }
 
     public function registerMediaCollections(): void

@@ -20,61 +20,59 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon   = 'heroicon-o-users';
-    protected static ?string $navigationLabel  = 'المستخدمون';
-    protected static ?string $pluralModelLabel = 'المستخدمون';
-    protected static ?string $modelLabel       = 'مستخدم';
-    protected static ?string $navigationGroup  = 'إدارة النظام';
     protected static ?int    $navigationSort   = 1;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.users'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.system_management'); }
+    public static function getModelLabel(): string { return __('messages.resource.user'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.users'); }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
 
-            Forms\Components\Section::make('المعلومات الأساسية')
+            Forms\Components\Section::make(__('messages.section.basic_info'))
                 ->icon('heroicon-o-user')
                 ->columns(2)
                 ->schema([
                     TextInput::make('name')
-                        ->label('الاسم الكامل')
+                        ->label(__('messages.field.name'))
                         ->required()
                         ->maxLength(255),
 
                     TextInput::make('email')
-                        ->label('البريد الإلكتروني')
+                        ->label(__('messages.field.email'))
                         ->email()
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255),
                 ]),
 
-            Forms\Components\Section::make('كلمة المرور')
+            Forms\Components\Section::make(__('messages.section.password'))
                 ->icon('heroicon-o-lock-closed')
                 ->schema([
                     TextInput::make('password')
-                        ->label('كلمة المرور')
+                        ->label(__('messages.field.password'))
                         ->password()
                         ->revealable()
-                        ->helperText(fn(string $context) => $context === 'edit'
-                            ? 'اتركها فارغة إذا لا تريد تغيير كلمة المرور'
-                            : null)
                         ->dehydrateStateUsing(fn($state) => $state ? bcrypt($state) : null)
                         ->dehydrated(fn($state) => filled($state))
                         ->required(fn(string $context) => $context === 'create'),
                 ]),
 
-            Forms\Components\Section::make('الصلاحيات والأقسام')
+            Forms\Components\Section::make(__('messages.section.permissions_departments'))
                 ->icon('heroicon-o-shield-check')
                 ->columns(2)
                 ->schema([
                     Select::make('roles')
-                        ->label('الأدوار')
+                        ->label(__('messages.field.roles'))
                         ->relationship('roles', 'name')
                         ->multiple()
                         ->preload()
                         ->searchable(),
 
                     Select::make('departments')
-                        ->label('الأقسام')
+                        ->label(__('messages.field.departments'))
                         ->relationship('departments', 'name')
                         ->multiple()
                         ->preload()
@@ -94,52 +92,50 @@ class UserResource extends Resource
                     ->width('60px'),
 
                 TextColumn::make('name')
-                    ->label('الاسم')
+                    ->label(__('messages.field.name'))
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 TextColumn::make('email')
-                    ->label('البريد الإلكتروني')
+                    ->label(__('messages.field.email'))
                     ->searchable()
                     ->sortable()
-                    ->copyable()
-                    ->copyMessage('تم نسخ البريد!'),
+                    ->copyable(),
 
                 TextColumn::make('roles.name')
-                    ->label('الأدوار')
+                    ->label(__('messages.field.roles'))
                     ->badge()
                     ->separator(','),
 
                 TextColumn::make('departments.name')
-                    ->label('الأقسام')
+                    ->label(__('messages.field.departments'))
                     ->badge()
                     ->color('primary')
                     ->separator(','),
 
                 TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
+                    ->label(__('messages.field.created_at'))
                     ->date('Y/m/d')
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('roles')
-                    ->label('الدور')
+                    ->label(__('messages.resource.role'))
                     ->relationship('roles', 'name')
                     ->preload(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\ViewAction::make()->label('عرض'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('heroicon-o-users')
-            ->emptyStateHeading('لا يوجد مستخدمون')
-            ->emptyStateDescription('ابدأ بإضافة مستخدم جديد.');
+            ->emptyStateHeading(__('messages.empty.no_users'));
     }
 
     public static function getPages(): array

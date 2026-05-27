@@ -21,7 +21,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-            Schema::defaultStringLength(191);
+        Schema::defaultStringLength(191);
 
+        \BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch::configureUsing(function (\BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch $switch) {
+            $switch
+                ->locales(['ar', 'en'])
+                ->labels([
+                    'ar' => 'العربية',
+                    'en' => 'English',
+                ])
+                ->circular()
+                ->renderHook('panels::user-menu.before');
+        });
     }
 }

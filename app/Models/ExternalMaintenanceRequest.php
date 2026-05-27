@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExternalMaintenanceRequest extends Model
 {
+    use \App\Traits\LogsActivityInArabic;
+
     protected $fillable = [
         'maintenance_request_id',
         'technical_description',
@@ -31,10 +33,10 @@ class ExternalMaintenanceRequest extends Model
     public static function statusOptions(): array
     {
         return [
-            'pending'   => '⏳ قيد الانتظار',
-            'approved'  => '✅ مقبول',
-            'completed' => '🏁 مكتمل',
-            'rejected'  => '❌ مرفوض',
+            'pending'   => '⏳ ' . __('messages.external_status.pending'),
+            'approved'  => '✅ ' . __('messages.external_status.approved'),
+            'completed' => '🏁 ' . __('messages.external_status.completed'),
+            'rejected'  => '❌ ' . __('messages.external_status.rejected'),
         ];
     }
 

@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\NotificationResource\Pages;
-use App\Models\Notification;
+use App\Models\AssetNotification;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,15 +14,15 @@ use Filament\Tables;
 
 class NotificationResource extends Resource
 {
-    protected static ?string $model = Notification::class;
+    protected static ?string $model = AssetNotification::class;
 
-    protected static ?string $navigationGroup = 'الإشعارات';
     protected static ?string $navigationIcon = 'heroicon-o-bell';
-    protected static ?string $navigationLabel = 'الإشعارات';
-    protected static ?string $pluralModelLabel = 'الإشعارات';
-    protected static ?string $modelLabel = 'إشعار';
-
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationLabel(): string { return __('messages.resource.notifications'); }
+    public static function getNavigationGroup(): ?string { return __('messages.nav.notifications'); }
+    public static function getModelLabel(): string { return __('messages.resource.notification'); }
+    public static function getPluralModelLabel(): string { return __('messages.resource.notifications'); }
 
     public static function getNavigationBadge(): ?string
     {
@@ -52,21 +52,21 @@ class NotificationResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('تفاصيل الإشعار')
+            Forms\Components\Section::make(__('messages.section.notification_details'))
                 ->icon('heroicon-o-bell')
                 ->schema([
                     Forms\Components\Textarea::make('message')
-                        ->label('نص الإشعار')
+                        ->label(__('messages.field.notification_text'))
                         ->disabled()
                         ->rows(3)
                         ->columnSpanFull(),
 
                     Forms\Components\TextInput::make('status')
-                        ->label('الحالة')
+                        ->label(__('messages.field.status'))
                         ->disabled(),
 
                     Forms\Components\Toggle::make('is_read')
-                        ->label('تمت القراءة؟')
+                        ->label(__('messages.field.is_read'))
                         ->disabled(),
                 ])
                 ->columns(2),
@@ -78,17 +78,17 @@ class NotificationResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('message')
-                    ->label('نص الإشعار')
+                    ->label(__('messages.field.notification_text'))
                     ->searchable()
                     ->wrap()
                     ->limit(80),
 
                 Tables\Columns\BadgeColumn::make('status')
-                    ->label('الحالة')
+                    ->label(__('messages.field.status'))
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_read')
-                    ->label('مقروء؟')
+                    ->label(__('messages.field.is_read'))
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
@@ -97,50 +97,47 @@ class NotificationResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('تاريخ الإشعار')
+                    ->label(__('messages.field.notification_date'))
                     ->dateTime('Y/m/d - h:i A')
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\Filter::make('unread')
-                    ->label('غير المقروءة فقط')
+                    ->label(__('messages.field.unread_only'))
                     ->query(fn($query) => $query->where('is_read', false))
                     ->toggle(),
             ])
             ->actions([
                 Tables\Actions\Action::make('markAsRead')
-                    ->label('تحديد كمقروء')
+                    ->label(__('messages.action.mark_as_read'))
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn(Notification $record) => !$record->is_read)
-                    ->action(fn(Notification $record) => $record->update(['is_read' => true]))
+                    ->visible(fn(AssetNotification $record) => !$record->is_read)
+                    ->action(fn(AssetNotification $record) => $record->update(['is_read' => true]))
                     ->requiresConfirmation()
-                    ->modalHeading('تحديد كمقروء')
-                    ->modalDescription('هل تريد تحديد هذا الإشعار كمقروء؟')
-                    ->modalSubmitActionLabel('نعم')
-                    ->modalCancelActionLabel('إلغاء'),
+                    ->modalHeading(__('messages.action.mark_as_read'))
+                    ->modalDescription(__('messages.action.confirm'))
+                    ->modalSubmitActionLabel(__('messages.action.yes'))
+                    ->modalCancelActionLabel(__('messages.action.no')),
 
-                Tables\Actions\DeleteAction::make()
-                    ->label('حذف'),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('markAllRead')
-                    ->label('تحديد الكل كمقروء')
+                    ->label(__('messages.action.mark_all_as_read'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->action(fn($records) => $records->each->update(['is_read' => true]))
                     ->requiresConfirmation()
-                    ->modalHeading('تحديد الكل كمقروء')
-                    ->modalSubmitActionLabel('نعم، حدّد الكل')
-                    ->modalCancelActionLabel('إلغاء'),
+                    ->modalHeading(__('messages.action.mark_all_as_read'))
+                    ->modalSubmitActionLabel(__('messages.action.yes'))
+                    ->modalCancelActionLabel(__('messages.action.no')),
 
-                Tables\Actions\DeleteBulkAction::make()
-                    ->label('حذف المحدد'),
+                Tables\Actions\DeleteBulkAction::make(),
             ])
             ->defaultSort('created_at', 'desc')
             ->emptyStateIcon('heroicon-o-bell-slash')
-            ->emptyStateHeading('لا توجد إشعارات')
-            ->emptyStateDescription('ستظهر هنا الإشعارات المتعلقة بأصولك.');
+            ->emptyStateHeading(__('messages.empty.no_notifications'));
     }
 
     public static function getPages(): array

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Administration extends Model
 {
+    use \App\Traits\LogsActivityInArabic;
+
     protected $fillable = ['name', 'sector_id'];
 
     public function sector()
