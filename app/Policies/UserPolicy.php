@@ -12,16 +12,15 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasPermissionTo('عرض المستخدمين') || $user->hasRole('super_admin');
     }
-
 
     /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, User $model): bool
     {
-        return true;
+        return $user->hasPermissionTo('عرض المستخدمين') || $user->hasRole('super_admin');
     }
 
     /**
@@ -29,7 +28,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasPermissionTo('إنشاء المستخدمين') || $user->hasRole('super_admin');
     }
 
     /**
@@ -37,7 +36,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return true;
+        return $user->hasPermissionTo('تعديل المستخدمين') || $user->hasRole('super_admin');
     }
 
     /**
@@ -45,7 +44,12 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return true;
+        // منع حذف المستخدم لنفسه
+        if ($user->id === $model->id) {
+            return false;
+        }
+
+        return $user->hasPermissionTo('حذف المستخدمين') || $user->hasRole('super_admin');
     }
 
     /**
@@ -53,7 +57,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return true;
+        return $user->hasRole('super_admin');
     }
 
     /**
@@ -61,6 +65,6 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return true;
+        return $user->hasRole('super_admin');
     }
 }

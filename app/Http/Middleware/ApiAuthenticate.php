@@ -20,7 +20,9 @@ class ApiAuthenticate
             ], 401);
         }
 
-        $employee = Employee::where('api_token', $token)->first();
+        // مقارنة التوكن المُشفّر (SHA-256)
+        $hashedToken = hash('sha256', $token);
+        $employee = Employee::where('api_token', $hashedToken)->first();
 
         if (!$employee) {
             return response()->json([

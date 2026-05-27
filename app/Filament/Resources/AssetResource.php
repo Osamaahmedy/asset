@@ -17,10 +17,10 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Models\Employee;
 use App\Models\AssetType;
+
 class AssetResource extends Resource
 {
     protected static ?string $model = Asset::class;
@@ -74,7 +74,7 @@ class AssetResource extends Resource
                         ->searchable()
                         ->preload()
                         ->nullable(),
-                        
+
                     Select::make('location_id')
                         ->label(__('messages.field.location'))
                         ->relationship('location', 'name')
@@ -108,9 +108,13 @@ class AssetResource extends Resource
 
                     Select::make('employee_id')
                         ->label(__('messages.field.employee'))
-                        ->options(function () {
-                            return Employee::with('department')
-                                ->get()
+                        ->options(function (Forms\Get $get) {
+                            $deptId = $get('department_id');
+                            $query = Employee::with('department');
+                            if ($deptId) {
+                                $query->where('department_id', $deptId);
+                            }
+                            return $query->get()
                                 ->mapWithKeys(fn($emp) => [
                                     $emp->id => "{$emp->name} — {$emp->department?->name}"
                                 ]);
@@ -119,19 +123,20 @@ class AssetResource extends Resource
                         ->nullable()
                         ->placeholder(__('messages.field.employee')),
                 ]),
-                    Forms\Components\ToggleButtons::make('is_personal')
-                       ->label(__('messages.field.is_personal'))
-                       ->options([
-                           false => __('messages.field.ministry'),
-                           true  => __('messages.field.personal'),
-                       ])
-                       ->default(false)
-                       ->inline()
-                       ->required()
-                       ->colors([
-                                              'danger'  => __('messages.field.personal'),
-                           'success' => __('messages.field.ministry'),
-                       ]),
+
+            Forms\Components\ToggleButtons::make('is_personal')
+                ->label(__('messages.field.is_personal'))
+                ->options([
+                    false => __('messages.field.ministry'),
+                    true  => __('messages.field.personal'),
+                ])
+                ->default(false)
+                ->inline()
+                ->required()
+                ->colors([
+                    'danger'  => __('messages.field.personal'),
+                    'success' => __('messages.field.ministry'),
+                ]),
 
             Forms\Components\Section::make(__('messages.section.dates_maintenance'))
                 ->icon('heroicon-o-calendar')
@@ -193,25 +198,24 @@ class AssetResource extends Resource
                 ]),
 
             Forms\Components\Section::make(__('messages.section.asset_classification'))
-              ->icon('heroicon-o-tag')
-               ->schema([
-                   Select::make('asset_type_id')
+                ->icon('heroicon-o-tag')
+                ->schema([
+                    Select::make('asset_type_id')
                         ->label(__('messages.field.asset_type'))
                         ->relationship('assetType', 'name')
-                      ->searchable()
-                         ->preload()
-                       ->required()
-                         ->createOptionForm([
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->createOptionForm([
                             TextInput::make('name')
                                 ->label(__('messages.field.name'))
-                               ->required()
-                              ->maxLength(255),
-                      ])
-                      ->placeholder(__('messages.field.asset_type')),
-                 ]),
+                                ->required()
+                                ->maxLength(255),
+                        ])
+                        ->placeholder(__('messages.field.asset_type')),
+                ]),
 
-
-
+            
         ]);
     }
 
@@ -235,7 +239,7 @@ class AssetResource extends Resource
                     ->label(__('messages.field.vendor'))
                     ->searchable()
                     ->sortable(),
-                
+
                 TextColumn::make('location.name')
                     ->label(__('messages.field.location'))
                     ->searchable()
@@ -256,6 +260,7 @@ class AssetResource extends Resource
                     ->label(__('messages.field.office'))
                     ->badge()
                     ->sortable(),
+
                 TextColumn::make('employee.name')
                     ->label(__('messages.field.employee'))
                     ->searchable()
@@ -263,8 +268,9 @@ class AssetResource extends Resource
                     ->color('warning')
                     ->default('—'),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label(__('messages.field.status'))
+                    ->badge()
                     ->formatStateUsing(fn ($state) => match($state) {
                         \App\Models\Asset::STATUS_AVAILABLE => __('messages.asset_status.available'),
                         \App\Models\Asset::STATUS_IN_USE => __('messages.asset_status.in_use'),
@@ -272,21 +278,22 @@ class AssetResource extends Resource
                         \App\Models\Asset::STATUS_DAMAGED => __('messages.asset_status.damaged'),
                         default => $state,
                     })
-                    ->colors([
-                        'success' => \App\Models\Asset::STATUS_AVAILABLE,
-                        'warning' => \App\Models\Asset::STATUS_IN_USE,
-                        'danger' => \App\Models\Asset::STATUS_DAMAGED,
-                        'primary' => \App\Models\Asset::STATUS_MAINTENANCE,
-                    ])
+                    ->color(fn ($state) => match($state) {
+                        \App\Models\Asset::STATUS_AVAILABLE => 'success',
+                        \App\Models\Asset::STATUS_IN_USE => 'warning',
+                        \App\Models\Asset::STATUS_DAMAGED => 'danger',
+                        \App\Models\Asset::STATUS_MAINTENANCE => 'primary',
+                        default => 'gray',
+                    })
                     ->sortable(),
-                BadgeColumn::make('is_personal')
+
+                TextColumn::make('is_personal')
                     ->label(__('messages.field.is_personal'))
+                    ->badge()
                     ->formatStateUsing(fn (bool $state): string => $state ? __('messages.field.personal') : __('messages.field.ministry'))
-                    ->colors([
-                        'warning' => fn (bool $state): bool => $state,
-                        'success' => fn (bool $state): bool => !$state,
-                    ])
+                    ->color(fn (bool $state) => $state ? 'warning' : 'success')
                     ->sortable(),
+
                 TextColumn::make('assetType.name')
                     ->label(__('messages.field.asset_type'))
                     ->sortable()
@@ -305,8 +312,9 @@ class AssetResource extends Resource
                     ->date('Y/m/d')
                     ->sortable(),
 
-                BadgeColumn::make('maintenance_status')
+                TextColumn::make('maintenance_status')
                     ->label(__('messages.field.status'))
+                    ->badge()
                     ->formatStateUsing(fn($state) => match($state) {
                         '❓ Unknown'               => __('messages.maintenance_status.unknown'),
                         '❌ Overdue'               => __('messages.maintenance_status.overdue'),
@@ -316,24 +324,49 @@ class AssetResource extends Resource
                         '✅ Good'                  => __('messages.maintenance_status.good'),
                         default                    => $state,
                     })
-                    ->colors([
-                        'danger'  => fn($state): bool => $state === '❌ Overdue',
-                        'warning' => fn($state): bool => str_contains($state, '⚠️') || str_contains($state, '🔔'),
-                        'success' => fn($state): bool => $state === '✅ Good',
-                    ]),
+                    ->color(fn($state) => match(true) {
+                        $state === '❌ Overdue' => 'danger',
+                        str_contains($state, '⚠️') || str_contains($state, '🔔') => 'warning',
+                        $state === '✅ Good' => 'success',
+                        default => 'gray',
+                    }),
 
-                BadgeColumn::make('deletion_status')
+                TextColumn::make('deletion_status')
                     ->label(__('messages.resource.deletion_request'))
+                    ->badge()
                     ->getStateUsing(fn($record) => $record->deletionConfirmation
                         ? __('messages.status.pending')
                         : __('messages.action.no'))
-                    ->colors([
-                        'warning' => fn($state) => $state === __('messages.status.pending'),
-                        'success' => fn($state) => $state === __('messages.action.no'),
-                    ]),
+                    ->color(fn($state) => match(true) {
+                        $state === __('messages.status.pending') => 'warning',
+                        default => 'success',
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label(__('messages.field.status'))
+                    ->options(\App\Models\Asset::getStatuses()),
+
+                Tables\Filters\SelectFilter::make('department_id')
+                    ->label(__('messages.field.department'))
+                    ->relationship('department', 'name'),
+
+                Tables\Filters\SelectFilter::make('asset_type_id')
+                    ->label(__('messages.field.asset_type'))
+                    ->relationship('assetType', 'name'),
+
+                Tables\Filters\SelectFilter::make('vendor_id')
+                    ->label(__('messages.field.vendor'))
+                    ->relationship('vendor', 'name'),
+
+                Tables\Filters\TernaryFilter::make('is_personal')
+                    ->label(__('messages.field.is_personal')),
+            ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label(__('messages.action.view')),
+
                 Tables\Actions\EditAction::make()
                     ->label(__('messages.action.edit')),
 
@@ -379,19 +412,23 @@ class AssetResource extends Resource
                                     \pxlrbt\FilamentExcel\Columns\Column::make('employee.name')->heading('اسم المالك (الموظف)'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('department.name')->heading('القسم / المكتب'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('location.name')->heading('الموقع'),
-                                    \pxlrbt\FilamentExcel\Columns\Column::make('vendor')->heading('المورد')
+                                    \pxlrbt\FilamentExcel\Columns\Column::make('vendor')
+                                        ->heading('المورد')
                                         ->formatStateUsing(fn ($state, $record) => $record->vendor?->name ?? 'لا يوجد'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('price')->heading('السعر'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('purchase_date')->heading('تاريخ الشراء'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('salvage_value')->heading('القيمة التخريدية'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('useful_life_years')->heading('العمر الافتراضي'),
-                                    \pxlrbt\FilamentExcel\Columns\Column::make('current_book_value')->heading('القيمة الحالية الدفترية')
+                                    \pxlrbt\FilamentExcel\Columns\Column::make('current_book_value')
+                                        ->heading('القيمة الحالية الدفترية')
                                         ->formatStateUsing(fn ($state, $record) => $record->current_book_value !== null ? number_format($record->current_book_value, 2) : 'بيانات غير مكتملة'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('assetType.name')->heading('نوع الأصل'),
                                     \pxlrbt\FilamentExcel\Columns\Column::make('status')->heading('الحالة'),
-                                    \pxlrbt\FilamentExcel\Columns\Column::make('is_personal')->heading('الملكية')
+                                    \pxlrbt\FilamentExcel\Columns\Column::make('is_personal')
+                                        ->heading('الملكية')
                                         ->formatStateUsing(fn ($state) => $state ? 'شخصي' : 'جهة العمل'),
-                                    \pxlrbt\FilamentExcel\Columns\Column::make('id')->heading('سجل الصيانات وتفاصيلها')
+                                    \pxlrbt\FilamentExcel\Columns\Column::make('id')
+                                        ->heading('سجل الصيانات وتفاصيلها')
                                         ->formatStateUsing(function ($state, $record) {
                                             if (!$record->maintenances || $record->maintenances->isEmpty()) {
                                                 return 'لا يوجد صيانات مسجلة';
@@ -417,6 +454,7 @@ class AssetResource extends Resource
         return [
             'index'  => Pages\ListAssets::route('/'),
             'create' => Pages\CreateAsset::route('/create'),
+            'view'   => Pages\ViewAsset::route('/{record}'),
             'edit'   => Pages\EditAsset::route('/{record}/edit'),
         ];
     }
@@ -443,7 +481,7 @@ class AssetResource extends Resource
         return auth()->user()?->can('حذف الأصول') ?? false;
     }
 
-    // ─── Query ──────────────────────────────────────────────────────────────────
+    // ─── Query with Eager Loading ──────────────────────────────────────────────
 
     public static function getEloquentQuery(): Builder
     {
@@ -462,6 +500,15 @@ class AssetResource extends Resource
             return $query->whereRaw('0 = 1');
         }
 
-        return $query->whereIn('department_id', $userDepartmentIds);
+        return $query
+            ->whereIn('department_id', $userDepartmentIds)
+            ->with([
+                'department',
+                'employee',
+                'assetType',
+                'vendor',
+                'location',
+                'deletionConfirmation',
+            ]);
     }
 }

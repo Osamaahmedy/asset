@@ -77,9 +77,15 @@ class SparePartResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('low_stock')
+                    ->label('مخزون منخفض')
+                    ->query(fn (Builder $query) => $query->where('quantity', '<=', 5)),
+                Tables\Filters\Filter::make('out_of_stock')
+                    ->label('نفد المخزون')
+                    ->query(fn (Builder $query) => $query->where('quantity', '<=', 0)),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

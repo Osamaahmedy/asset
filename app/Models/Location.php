@@ -7,8 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 class Location extends Model
 {
     use \App\Traits\LogsActivityInArabic;
+
     protected $fillable = ['name', 'parent_id'];
-    
-    public function parent() { return $this->belongsTo(Location::class, 'parent_id'); }
-    public function children() { return $this->hasMany(Location::class, 'parent_id'); }
+
+    public function parent()
+    {
+        return $this->belongsTo(Location::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Location::class, 'parent_id');
+    }
+
+    /**
+     * الأصول في هذا الموقع
+     */
+    public function assets()
+    {
+        return $this->hasMany(Asset::class);
+    }
 }

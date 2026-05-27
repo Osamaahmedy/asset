@@ -93,9 +93,15 @@ class AssetHandoverResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('active')
+                    ->label('عهدة نشطة (لم ترجع)')
+                    ->query(fn (Builder $query) => $query->whereNull('returned_at')),
+                Tables\Filters\Filter::make('returned')
+                    ->label('تمت الإرجاع')
+                    ->query(fn (Builder $query) => $query->whereNotNull('returned_at')),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

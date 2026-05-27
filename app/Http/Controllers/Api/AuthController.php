@@ -29,15 +29,18 @@ class AuthController extends Controller
         }
 
         // توليد توكن جديد في كل تسجيل دخول
-        $token = Str::random(60);
+        $plainToken = Str::random(60);
 
-        $employee->update(['api_token' => $token]);
+        // تخزين التوكن مُشفّراً في قاعدة البيانات
+        $employee->forceFill([
+            'api_token' => hash('sha256', $plainToken),
+        ])->save();
 
         return response()->json([
             'success' => true,
             'message' => 'تم تسجيل الدخول بنجاح',
             'data'    => [
-                'token'    => $token,
+                'token'    => $plainToken,
                 'employee' => [
                     'id'         => $employee->id,
                     'name'       => $employee->name,
@@ -83,7 +86,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->update(['api_token' => null]);
+        $request->user()->forceFill(['api_token' => null])->save();
 
         return response()->json([
             'success' => true,

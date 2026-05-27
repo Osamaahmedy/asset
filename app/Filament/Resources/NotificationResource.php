@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\NotificationResource\Pages;
-use App\Models\AssetNotification;
+use App\Models\Notification;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,7 +14,7 @@ use Filament\Tables;
 
 class NotificationResource extends Resource
 {
-    protected static ?string $model = AssetNotification::class;
+    protected static ?string $model = Notification::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-bell';
     protected static ?int $navigationSort = 1;
@@ -83,8 +83,9 @@ class NotificationResource extends Resource
                     ->wrap()
                     ->limit(80),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label(__('messages.field.status'))
+                    ->badge()
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_read')
@@ -112,8 +113,8 @@ class NotificationResource extends Resource
                     ->label(__('messages.action.mark_as_read'))
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn(AssetNotification $record) => !$record->is_read)
-                    ->action(fn(AssetNotification $record) => $record->update(['is_read' => true]))
+                    ->visible(fn(Notification $record) => !$record->is_read)
+                    ->action(fn(Notification $record) => $record->update(['is_read' => true]))
                     ->requiresConfirmation()
                     ->modalHeading(__('messages.action.mark_as_read'))
                     ->modalDescription(__('messages.action.confirm'))

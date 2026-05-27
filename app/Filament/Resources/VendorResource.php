@@ -75,9 +75,12 @@ class VendorResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('has_assets')
+                    ->label('لديه أصول')
+                    ->query(fn (Builder $query) => $query->has('assets')),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

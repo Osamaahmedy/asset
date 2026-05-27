@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Carbon\Carbon;
-        use App\Models\Notification;
+use App\Models\Notification;
 
 class Asset extends Model implements HasMedia
 {
     use \App\Traits\LogsActivityInArabic;
-
     use InteractsWithMedia;
 
     /**
@@ -73,10 +72,12 @@ class Asset extends Model implements HasMedia
         $salvage = (float) ($this->salvage_value ?? 0);
         $years = (int) $this->useful_life_years;
 
-        if ($years <= 0) return null;
+        if ($years <= 0) {
+            return null;
+        }
 
         $depreciationPerYear = ($cost - $salvage) / $years;
-        $yearsUsed = \Carbon\Carbon::parse($startDate)->diffInYears(now());
+        $yearsUsed = Carbon::parse($startDate)->diffInYears(now());
 
         if ($yearsUsed >= $years) {
             return $salvage; // تم إهلاك الأصل بالكامل
@@ -87,22 +88,23 @@ class Asset extends Model implements HasMedia
     }
 
     /**
-     * Automatically generate a serial number when creating
+     * Boot model events
      */
     protected static function booted()
     {
+        // حساب تاريخ الصيانة القادم تلقائياً
         static::saving(function ($asset) {
             if ($asset->last_maintenance_date && $asset->maintenance_cycle_months) {
-                $asset->maintenance_due_date = \Carbon\Carbon::parse($asset->last_maintenance_date)
+                $asset->maintenance_due_date = Carbon::parse($asset->last_maintenance_date)
                     ->addMonths((int) $asset->maintenance_cycle_months)
                     ->toDateString();
             }
         });
 
+        // إشعار عند حالة صيانة غير جيدة
         static::saved(function ($asset) {
             $status = $asset->maintenance_status;
 
-            // If the status is not good, create a notification
             if ($status !== '✅ Good') {
                 Notification::create([
                     'asset_id' => $asset->id,
@@ -112,20 +114,17 @@ class Asset extends Model implements HasMedia
             }
         });
 
+        // توليد رقم تسلسلي تلقائي
         static::creating(function ($asset) {
             $asset->serial_number = strtoupper('ASSET-' . uniqid());
         });
 
-    static::deleting(function ($asset) {
-    if (!$asset->deletionConfirmation || !$asset->deletionConfirmation->is_confirmed) {
-
-        return false;
-    }
-
-
-});
-
-
+        // منع الحذف بدون تأكيد
+        static::deleting(function ($asset) {
+            if (!$asset->deletionConfirmation || !$asset->deletionConfirmation->is_confirmed) {
+                return false;
+            }
+        });
     }
 
     /**
@@ -138,18 +137,15 @@ class Asset extends Model implements HasMedia
     }
 
     /**
-     * Dynamic maintenance status
+     * Accessor for dynamic maintenance status
      */
-   /**
- * Accessor for dynamic maintenance status
- */
     public function getMaintenanceStatusAttribute(): string
     {
         if (!$this->last_maintenance_date || !$this->maintenance_cycle_months) {
             return '❓ Unknown';
         }
 
-        $nextDueDate = \Carbon\Carbon::parse($this->last_maintenance_date)->addMonths((int) $this->maintenance_cycle_months);
+        $nextDueDate = Carbon::parse($this->last_maintenance_date)->addMonths((int) $this->maintenance_cycle_months);
         $daysRemaining = now()->diffInDays($nextDueDate, false);
 
         if ($daysRemaining < 0) {
@@ -165,49 +161,90 @@ class Asset extends Model implements HasMedia
         return '✅ Good';
     }
 
+    /**
+     * QR Code accessor
+     */
     public function getQrCodeAttribute(): string
     {
         $data = url('/api/assets/' . $this->id);
         $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(150)
             ->format('svg')
             ->generate($data);
-        
+
         return 'data:image/svg+xml;base64,' . base64_encode($qrCode);
     }
 
+    /**
+     * Check if warranty is expired
+     */
+    public function getIsWarrantyExpiredAttribute(): bool
+    {
+        if (!$this->warranty_start_date || !$this->warranty_months) {
+            return false;
+        }
+
+        $expiryDate = Carbon::parse($this->warranty_start_date)->addMonths((int) $this->warranty_months);
+        return now()->greaterThan($expiryDate);
+    }
 
     /**
-     * Relationship: belongs to department
+     * Get warranty expiry date
      */
+    public function getWarrantyExpiryDateAttribute(): ?string
+    {
+        if (!$this->warranty_start_date || !$this->warranty_months) {
+            return null;
+        }
+
+        return Carbon::parse($this->warranty_start_date)
+            ->addMonths((int) $this->warranty_months)
+            ->toDateString();
+    }
+
+    /**
+     * Get days until warranty expires (negative = expired)
+     */
+    public function getWarrantyDaysRemainingAttribute(): ?int
+    {
+        if (!$this->warranty_expiry_date) {
+            return null;
+        }
+
+        return (int) now()->diffInDays(Carbon::parse($this->warranty_expiry_date), false);
+    }
+
+    // ─── Relations ───────────────────────────────────────────────────────────
+
     public function department()
     {
         return $this->belongsTo(Department::class);
     }
 
-    /**
-     * Relationship: has many maintenances
-     */
     public function maintenances()
     {
         return $this->hasMany(Maintenance::class);
     }
+
     public function deletionConfirmation()
-{
-    return $this->hasOne(\App\Models\AssetDeletionConfirmation::class);
-}
-public function employee()
-{
-    return $this->belongsTo(Employee::class);
-}
-public function assetType()
-{
-    return $this->belongsTo(AssetType::class);
-}
+    {
+        return $this->hasOne(AssetDeletionConfirmation::class);
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function assetType()
+    {
+        return $this->belongsTo(AssetType::class);
+    }
+
     public function maintenanceRequests()
     {
         return $this->hasMany(MaintenanceRequest::class);
     }
-    
+
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
@@ -218,26 +255,34 @@ public function assetType()
         return $this->belongsTo(Location::class);
     }
 
-public function scopeVisibleTo($query, $employee)
-{
-    return $query->where(function ($q) use ($employee) {
-        // أصول المكتب العامة
-        $q->where(function ($inner) use ($employee) {
-            $inner->where('department_id', $employee->department_id)
-                  ->where('is_personal', false);
-        })
-        // أو أصول شخصية تخص هذا الموظف تحديداً
-        ->orWhere(function ($inner) use ($employee) {
-            $inner->where('is_personal', true)
-                  ->where('employee_id', $employee->id);
+    public function handovers()
+    {
+        return $this->hasMany(AssetHandover::class);
+    }
+
+    // ─── Scopes ──────────────────────────────────────────────────────────────
+
+    public function scopeVisibleTo($query, $employee)
+    {
+        return $query->where(function ($q) use ($employee) {
+            // أصول المكتب العامة
+            $q->where(function ($inner) use ($employee) {
+                $inner->where('department_id', $employee->department_id)
+                      ->where('is_personal', false);
+            })
+            // أو أصول شخصية تخص هذا الموظف تحديداً
+            ->orWhere(function ($inner) use ($employee) {
+                $inner->where('is_personal', true)
+                      ->where('employee_id', $employee->id);
+            });
         });
-    });
-}
-/**
- * Accessor للحصول على اسم المورد مباشرة
- */
-public function getVendorNameAttribute(): string
-{
-    return $this->vendor?->name ?? 'لا يوجد';
-}
+    }
+
+    /**
+     * Accessor للحصول على اسم المورد مباشرة
+     */
+    public function getVendorNameAttribute(): string
+    {
+        return $this->vendor?->name ?? 'لا يوجد';
+    }
 }

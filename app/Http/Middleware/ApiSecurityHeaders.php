@@ -53,7 +53,7 @@ class ApiSecurityHeaders
             }
         }
 
-        // ─── 4. فحص SQL Injection بسيط في الـ inputs ─────────────────────────
+        // ─── 4. فحص SQL Injection — أنماط فعلية فقط ──────────────────────────
         if ($this->hasSqlInjection($request)) {
             Log::warning('API: محاولة SQL Injection', [
                 'ip'     => $request->ip(),
@@ -95,11 +95,13 @@ class ApiSecurityHeaders
 
     private function hasSqlInjection(Request $request): bool
     {
+        // أنماط SQL Injection الفعلية فقط — لا نحظر كلمات عادية مثل UPDATE/SELECT في وصف المشكلة
         $patterns = [
-            '/(\bUNION\b|\bSELECT\b|\bINSERT\b|\bDROP\b|\bDELETE\b|\bUPDATE\b)/i',
-            '/(-{2}|\/\*|\*\/|;)/',
-            '/(\'|\")\s*(OR|AND)\s*(\'|\"|\d)/i',
-            '/\bEXEC\b|\bEXECUTE\b|\bxp_/i',
+            '/\bUNION\b\s+(ALL\s+)?\bSELECT\b/i',       // UNION SELECT injection
+            '/[\'\"]\s*(OR|AND)\s*[\'\"0-9]\s*[=<>]/i',   // Tautology: ' OR '1'='1
+            '/(-{2}|\/\*)\s*$/im',                         // Comment injection at end of line
+            '/;\s*(DROP|ALTER|TRUNCATE|CREATE)\b/i',       // Stacked destructive queries
+            '/\bxp_\w+/i',                                 // SQL Server stored procedures
         ];
 
         $inputs = array_values(array_filter($request->all(), 'is_string'));

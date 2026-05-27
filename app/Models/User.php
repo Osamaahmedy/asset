@@ -8,15 +8,19 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+
 class User extends Authenticatable implements FilamentUser
 {
     use \App\Traits\LogsActivityInArabic;
-
     use HasFactory, Notifiable, HasRoles;
-public function departments()
-{
-    return $this->belongsToMany(Department::class);
-}
+
+    /**
+     * العلاقة مع الأقسام
+     */
+    public function departments()
+    {
+        return $this->belongsToMany(Department::class);
+    }
 
     /**
      * الخصائص التي يمكن تعبئتها جماعياً
@@ -48,9 +52,14 @@ public function departments()
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-public function canAccessPanel(Panel $panel): bool
-{
-    return true;
-}
 
+    /**
+     * التحقق من صلاحية الوصول للوحة التحكم
+     * يجب أن يكون لدى المستخدم role معين أو صلاحية معينة
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // السماح لأصحاب الأدوار فقط (أي مستخدم لديه role واحد على الأقل)
+        return $this->roles()->exists();
+    }
 }

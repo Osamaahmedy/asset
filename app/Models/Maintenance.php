@@ -23,7 +23,16 @@ class Maintenance extends Model implements HasMedia
     {
         // ─── إنشاء ───────────────────────────────────────────────────────────
         static::created(function ($maintenance) {
-            if ($maintenance->status === 'Pending' || $maintenance->status === 'In Progress') {
+            if ($maintenance->status === 'Maintenance Completed') {
+                // إذا أُنشئت الصيانة بحالة "مكتملة" مباشرة → حدّث تاريخ الصيانة وأرجع حالة الأصل
+                $asset = $maintenance->asset;
+                if ($asset) {
+                    $asset->update([
+                        'last_maintenance_date' => $maintenance->maintenance_date,
+                        'status' => $asset->employee_id ? \App\Models\Asset::STATUS_IN_USE : \App\Models\Asset::STATUS_AVAILABLE,
+                    ]);
+                }
+            } elseif (in_array($maintenance->status, ['Pending', 'In Progress'])) {
                 $maintenance->asset?->update([
                     'status' => \App\Models\Asset::STATUS_MAINTENANCE,
                 ]);
