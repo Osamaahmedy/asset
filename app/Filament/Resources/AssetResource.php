@@ -444,7 +444,10 @@ class AssetResource extends Resource
                         ->label(__('messages.action.print_barcodes'))
                         ->icon('heroicon-o-printer')
                         ->color('primary')
-                        ->action(fn (\Illuminate\Database\Eloquent\Collection $records) => redirect()->route('assets.print-barcodes', ['ids' => $records->pluck('id')->join(',')])),
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, $livewire) {
+                            $url = route('assets.print-barcodes', ['ids' => $records->pluck('id')->join(',')]);
+                            $livewire->js("window.open('{$url}', '_blank');");
+                        }),
                 ]),
             ]);
     }

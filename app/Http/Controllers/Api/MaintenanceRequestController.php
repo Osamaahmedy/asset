@@ -7,6 +7,8 @@ use App\Http\Requests\Api\MaintenanceRequestStoreRequest;
 use App\Models\MaintenanceRequest;
 use App\Models\Asset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class MaintenanceRequestController extends Controller
 {
@@ -16,45 +18,79 @@ class MaintenanceRequestController extends Controller
     {
         $employee = $request->user();
 
-        $asset = Asset::where('id', $request->asset_id)
-            ->where('department_id', $employee->department_id)
-            ->first();
+        // 1. استخدام قفل ذري (Atomic Lock) على مستوى التطبيق لمنع التزامن على نفس الأصل
+        $lockKey = 'maintenance_request_lock_' . $request->asset_id;
+        $lock = Cache::lock($lockKey, 10); // قفل لمدة 10 ثوانٍ كأقصى حد
 
-        if (!$asset) {
+        try {
+            // محاولة الحصول على القفل بدون انتظار (أو انتظار خفيف جداً)
+            // إذا كان القفل محجوزاً بالفعل من طلب آخر متزامن، نرجع رد 429
+            if (!$lock->get()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الطلب قيد المعالجة حالياً، يرجى المحاولة بعد قليل.',
+                ], 429);
+            }
+
+            // 2. استخدام Transaction مع Pessimistic Lock لمنع الـ Race Condition في قاعدة البيانات
+            return DB::transaction(function () use ($request, $employee) {
+                
+                // جلب الأصل مع قفل للقراءة والتعديل لمنع أي معاملة أخرى من تعديله متزامناً
+                $asset = Asset::where('id', $request->asset_id)
+                    ->where('department_id', $employee->department_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$asset) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'الأصل غير موجود أو لا ينتمي لمكتبك',
+                    ], 403);
+                }
+
+                // فحص وجود طلب معلق أو مؤجل مع قفل
+                $existing = MaintenanceRequest::where('asset_id', $request->asset_id)
+                    ->whereIn('status', ['pending', 'postponed'])
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($existing) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'يوجد طلب صيانة قيد الانتظار أو مؤجل لهذا الأصل بالفعل',
+                    ], 409);
+                }
+
+                // إنشاء طلب الصيانة
+                $maintenanceRequest = MaintenanceRequest::create([
+                    'asset_id'            => $request->asset_id,
+                    'employee_id'         => $employee->id,
+                    'problem_date'        => $request->problem_date,
+                    'problem_description' => $request->problem_description,
+                    'priority'            => $employee->priority, // من حساب الموظف
+                    'status'              => 'pending',
+                ]);
+
+                $maintenanceRequest->load(['asset.department.administration.sector', 'employee']);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم إرسال طلب الصيانة بنجاح',
+                    'data'    => $this->formatRequest($maintenanceRequest),
+                ], 201);
+            });
+
+        } catch (\Exception $e) {
+            // تسجيل الخطأ إن حدث شيء غير متوقع
+            logger()->error('خطأ أثناء إنشاء طلب صيانة متزامن: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'الأصل غير موجود أو لا ينتمي لمكتبك',
-            ], 403);
+                'message' => 'حدث خطأ في النظام أثناء معالجة طلبك، يرجى المحاولة لاحقاً.',
+            ], 500);
+        } finally {
+            // تحرير القفل دائماً بعد الانتهاء
+            $lock->release();
         }
-
-        // منع إرسال طلب إذا يوجد طلب معلق أو مؤجل لنفس الأصل
-        $existing = MaintenanceRequest::where('asset_id', $request->asset_id)
-            ->whereIn('status', ['pending', 'postponed'])
-            ->exists();
-
-        if ($existing) {
-            return response()->json([
-                'success' => false,
-                'message' => 'يوجد طلب صيانة قيد الانتظار أو مؤجل لهذا الأصل بالفعل',
-            ], 409);
-        }
-
-        $maintenanceRequest = MaintenanceRequest::create([
-            'asset_id'            => $request->asset_id,
-            'employee_id'         => $employee->id,
-            'problem_date'        => $request->problem_date,
-            'problem_description' => $request->problem_description,
-            'priority'            => $employee->priority, // من حساب الموظف
-            'status'              => 'pending',
-        ]);
-
-        $maintenanceRequest->load(['asset.department.administration.sector', 'employee']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'تم إرسال طلب الصيانة بنجاح',
-            'data'    => $this->formatRequest($maintenanceRequest),
-        ], 201);
     }
 
     // ─── طلبات الموظف الحالي ─────────────────────────────────────────────────
