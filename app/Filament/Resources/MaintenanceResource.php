@@ -39,13 +39,25 @@ class MaintenanceResource extends Resource
                 ->icon('heroicon-o-wrench-screwdriver')
                 ->columns(2)
                 ->schema([
-                    Select::make('asset_id')
-                        ->label(__('messages.field.asset'))
-                        ->relationship('asset', 'name')
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->columnSpanFull(),
+                  Select::make('asset_id')
+    ->label(__('messages.field.asset'))
+    ->options(function () {
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
+
+        return Asset::with('department')
+            ->whereIn('department_id', $userDepartmentIds)
+            ->get()
+            ->mapWithKeys(fn ($asset) => [
+                $asset->id => $asset->name . ' — ' . ($asset->department?->name ?? ''),
+            ]);
+    })
+    ->searchable()
+    ->preload()
+    ->required()
+    ->columnSpanFull(),
 
                     DatePicker::make('maintenance_date')
                         ->label(__('messages.field.maintenance_date'))
