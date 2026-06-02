@@ -241,6 +241,111 @@
             color: #9ca3af;
         }
         
+        /* Search results dropdown styling */
+        .search-dropdown-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 50;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 4px;
+        }
+        .dark .search-dropdown-results {
+            background: #1f2937;
+            border-color: #374151;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+        .search-result-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s;
+            text-align: right;
+        }
+        .dark .search-result-item {
+            border-bottom-color: #374151;
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        .search-result-item:hover {
+            background: #f8fafc;
+        }
+        .dark .search-result-item:hover {
+            background: #374151;
+        }
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .result-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        .dark .result-name {
+            color: #f8fafc;
+        }
+        .result-serial {
+            font-family: monospace;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .dark .result-serial {
+            color: #94a3b8;
+        }
+        .result-meta {
+            font-size: 11px;
+            color: #4f46e5;
+            background: #eeebff;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+        .dark .result-meta {
+            color: #a5b4fc;
+            background: #312e81;
+        }
+
+        /* Filter list input styling */
+        .filter-bar {
+            padding: 16px;
+            border-bottom: 1px solid #eaeaea;
+            background: #ffffff;
+        }
+        .dark .filter-bar {
+            border-color: #27272a;
+            background: #18181b;
+        }
+        .filter-input {
+            width: 100%;
+            height: 46px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .dark .filter-input {
+            background: #111827;
+            border-color: #374151;
+            color: white;
+        }
+        .filter-input:focus {
+            border-color: var(--primary-500, #3b82f6);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
         @media (max-width: 768px) {
             .scanner-form { flex-direction: column; }
             .scanner-btn { width: 100%; }
@@ -298,7 +403,7 @@
         <!-- Scanner Section -->
         @if($audit->status !== 'Completed')
         <div class="audit-card scanner-card">
-            <form wire:submit.prevent="scanBarcode" class="scanner-form">
+            <form wire:submit.prevent="scanBarcode" class="scanner-form" autocomplete="off">
                 <div class="scanner-input-group">
                     <label class="scanner-label">
                         {{ __('messages.audit.scan_label') }}
@@ -306,12 +411,28 @@
                     <div style="position: relative;">
                         <input 
                             type="text" 
-                            wire:model="scannedBarcode" 
+                            wire:model.live.debounce.250ms="scannedBarcode" 
                             autofocus 
                             class="scanner-input"
                             placeholder="{{ __('messages.audit.scan_placeholder') }}"
                         >
                         <x-heroicon-o-qr-code style="position: absolute; left: 16px; top: 16px; width: 24px; height: 24px; color: #9ca3af; pointer-events: none;" />
+
+                        @if(!empty($searchResults))
+                            <div class="search-dropdown-results">
+                                @foreach($searchResults as $result)
+                                    <div wire:click="selectAsset({{ $result['id'] }})" class="search-result-item">
+                                        <div class="result-info">
+                                            <span class="result-name">{{ $result['name'] }}</span>
+                                            <span class="result-serial">{{ $result['serial_number'] }}</span>
+                                        </div>
+                                        <span class="result-meta">
+                                            {{ $result['location']['name'] ?? __('messages.audit.unspecified_location') }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div>
@@ -326,6 +447,30 @@
         <!-- Tabs Section using Alpine.js -->
         <div x-data="{ activeTab: 'missing' }" class="tabs-container">
             
+            <!-- Search Filter Bar -->
+            <div class="filter-bar">
+                <div style="position: relative; width: 100%;">
+                    <input 
+                        type="text" 
+                        wire:model.live.debounce.300ms="searchQuery" 
+                        class="filter-input"
+                        placeholder="{{ __('messages.audit.filter_placeholder') }}"
+                        style="padding-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}: 44px; padding-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 44px;"
+                    >
+                    <x-heroicon-o-magnifying-glass style="position: absolute; {{ app()->getLocale() === 'ar' ? 'right' : 'left' }}: 16px; top: 13px; width: 20px; height: 20px; color: #9ca3af; pointer-events: none;" />
+                    @if(!empty($searchQuery))
+                        <button 
+                            type="button"
+                            wire:click="$set('searchQuery', '')" 
+                            style="position: absolute; {{ app()->getLocale() === 'ar' ? 'left' : 'right' }}: 16px; top: 13px; color: #9ca3af;"
+                            class="hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                            <x-heroicon-o-x-mark style="width: 20px; height: 20px;" />
+                        </button>
+                    @endif
+                </div>
+            </div>
+
             <!-- Tabs Header -->
             <div class="tabs-header">
                 <button 

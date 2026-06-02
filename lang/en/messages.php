@@ -278,6 +278,8 @@ return [
     'audit.misplaced_desc' => 'Asset :name does not belong to this location!',
     'audit.completed_title' => 'Audit Completed',
     'audit.completed_desc' => 'The audit session has been successfully closed.',
+    'audit.filter_placeholder' => 'Filter current list by name or serial...',
+    'audit.db_search_placeholder' => 'Search by name or serial to register manually...',
 
     // Asset Statuses
     'asset_status.available' => 'Available',
@@ -292,4 +294,87 @@ return [
     'maintenance_status.less_than_month' => '⚠️ Less than a month',
     'maintenance_status.less_than_two_months' => '🔔 Less than two months',
     'maintenance_status.good' => '✅ Good',
+
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    'nav' => [
+        'asset_management' => 'Asset Management',
+        // ... your other nav groups
+    ],
+
+    // ── Resources ─────────────────────────────────────────────────────────
+    'resource' => [
+        'asset_handover'  => 'Asset Handover',
+        'asset_handovers' => 'Asset Handovers',
+        // ... your other resources
+    ],
+
+    // ── Sections ──────────────────────────────────────────────────────────
+    'section' => [
+        'basic_info'       => 'Basic Information',
+        'handover_details' => 'Handover Details',
+        'return_details'   => 'Return Details',
+        'general_notes'    => 'General Notes',
+    ],
+
+    // ── Actions ───────────────────────────────────────────────────────────
+    'action' => [
+        'handover' => 'Handover',
+        'return'   => 'Return',
+    ],
+
+    // ── Device Conditions ─────────────────────────────────────────────────
+    'condition' => [
+        'new'          => 'New',
+        'excellent'    => 'Excellent',
+        'good'         => 'Good',
+        'acceptable'   => 'Acceptable',
+        'damaged'      => 'Damaged',
+        'needs_repair' => 'Needs Repair',
+    ],
+
+    // ── Fields ────────────────────────────────────────────────────────────
+    'field' => [
+        'asset'                  => 'Asset',
+        'employee'               => 'Employee',
+        'action_type'            => 'Action Type',
+        'handed_over_at'         => 'Handed Over At',
+        'returned_at'            => 'Returned At',
+        'condition_on_handover'  => 'Condition on Handover',
+        'condition_on_return'    => 'Condition on Return',
+        'handover_notes'         => 'Handover Notes',
+        'return_notes'           => 'Return Notes',
+        'notes'                  => 'General Notes',
+    ],
+
+    // ── Filters ───────────────────────────────────────────────────────────
+    'filter' => [
+        'active_handovers' => 'Active (Not Returned)',
+        'returned'         => 'Returned',
+    ],
+
+    // Asset Replacement Requests
+    'resource.asset_replacement_requests' => 'Asset Replacement Requests',
+    'resource.asset_replacement_request' => 'Asset Replacement Request',
+    'replacement.field.requester' => 'Requester',
+    'replacement.field.reason' => 'Reason',
+    'replacement.field.target_location' => 'Target Location',
+    'replacement.field.rejection_reason' => 'Rejection Reason',
+    'replacement.field.actioned_at' => 'Actioned At',
+    'replacement.status.pending' => 'Pending',
+    'replacement.status.approved' => 'Approved',
+    'replacement.status.rejected' => 'Rejected',
+    'replacement.reason.completely_damaged' => 'Completely Damaged',
+    'replacement.reason.expired' => 'Expired',
+    'replacement.reason.other' => 'Other',
+    'replacement.section.request_details' => 'Request Details',
+    'replacement.section.decision_details' => 'Decision Details',
+    'replacement.action.approve' => 'Approve',
+    'replacement.action.reject' => 'Reject',
+    'replacement.action.approve_confirm' => 'Are you sure you want to approve the replacement of this asset? It will be automatically moved to the target location and its status changed to damaged.',
+    'replacement.action.reject_confirm' => 'Are you sure you want to reject this request?',
+    'replacement.action.request_replacement' => 'Request Replacement',
+    'replacement.action.request_success' => 'Asset replacement request submitted successfully.',
+    'replacement.field.other_reason' => 'Please write the reason in detail',
+    'replacement.field.notes' => 'Additional Notes',
 ];

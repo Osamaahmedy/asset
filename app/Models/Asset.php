@@ -260,6 +260,11 @@ class Asset extends Model implements HasMedia
         return $this->hasMany(AssetHandover::class);
     }
 
+    public function replacementRequests()
+    {
+        return $this->hasMany(AssetReplacementRequest::class);
+    }
+
     // ─── Scopes ──────────────────────────────────────────────────────────────
 
     public function scopeVisibleTo($query, $employee)

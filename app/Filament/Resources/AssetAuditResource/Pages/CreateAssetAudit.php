@@ -20,8 +20,11 @@ class CreateAssetAudit extends CreateRecord
     {
         $audit = $this->record;
         
-        // Fetch all assets expected at this location
+        // Fetch all assets expected at this location and department
         $expectedAssets = \App\Models\Asset::where('location_id', $audit->location_id)
+            ->when($audit->department_id, function ($query, $deptId) {
+                return $query->where('department_id', $deptId);
+            })
             ->whereNotIn('status', [\App\Models\Asset::STATUS_DAMAGED, \App\Models\Asset::STATUS_MAINTENANCE])
             ->get();
 

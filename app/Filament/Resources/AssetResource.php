@@ -393,6 +393,60 @@ class AssetResource extends Resource
                             ->success()
                             ->send();
                     }),
+
+                Tables\Actions\Action::make('requestReplacement')
+                    ->label(__('messages.replacement.action.request_replacement'))
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->visible(fn (Asset $record) => !$record->replacementRequests()->whereIn('status', ['pending', 'approved'])->exists())
+                    ->modalHeading(__('messages.replacement.action.request_replacement'))
+                    ->modalWidth('lg')
+                    ->form([
+                        Forms\Components\Select::make('reason')
+                            ->label(__('messages.replacement.field.reason'))
+                            ->options([
+                                'completely_damaged' => __('messages.replacement.reason.completely_damaged'),
+                                'expired' => __('messages.replacement.reason.expired'),
+                                'other' => __('messages.replacement.reason.other'),
+                            ])
+                            ->native(false)
+                            ->required()
+                            ->live(),
+
+                        Forms\Components\Select::make('target_location_id')
+                            ->label(__('messages.replacement.field.target_location'))
+                            ->relationship('location', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label(__('messages.replacement.field.other_reason'))
+                            ->rows(3)
+                            ->visible(fn (Forms\Get $get) => $get('reason') === 'other')
+                            ->required(fn (Forms\Get $get) => $get('reason') === 'other'),
+
+                        Forms\Components\Textarea::make('notes')
+                            ->label(__('messages.replacement.field.notes'))
+                            ->rows(3),
+                    ])
+                    ->action(function (Asset $record, array $data) {
+                        \App\Models\AssetReplacementRequest::create([
+                            'asset_id' => $record->id,
+                            'requester_id' => auth()->id(),
+                            'reason' => $data['reason'],
+                            'target_location_id' => $data['target_location_id'],
+                            'description' => $data['description'] ?? null,
+                            'notes' => $data['notes'] ?? null,
+                            'status' => 'pending',
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title(__('messages.replacement.action.request_replacement'))
+                            ->body(__('messages.replacement.action.request_success'))
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -7,8 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class AssetHandover extends Model
 {
     use \App\Traits\LogsActivityInArabic;
-    protected $fillable = ['asset_id', 'employee_id', 'handed_over_at', 'returned_at', 'condition_on_handover', 'condition_on_return', 'notes'];
-
+    protected $fillable = [
+        'asset_id',
+        'employee_id',
+        'action_type',
+        'handed_over_at',
+        'returned_at',
+        'condition_on_handover',
+        'condition_on_return',
+        'handover_notes',
+        'return_notes',
+        'notes',
+    ];
     protected static function booted()
     {
         static::saved(function ($handover) {

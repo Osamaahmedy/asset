@@ -13,6 +13,8 @@ class ScanAssetAudit extends Page
 
     public $record;
     public $scannedBarcode = '';
+    public $searchQuery = '';
+    public $searchResults = [];
     public $audit;
     public $auditItems = [];
     public $stats = [
@@ -26,22 +28,76 @@ class ScanAssetAudit extends Page
     public function mount($record): void
     {
         $this->record = $record;
-        $this->audit = \App\Models\AssetAudit::with(['items.asset', 'location'])->findOrFail($record);
+        $this->audit = \App\Models\AssetAudit::with(['items.asset.location', 'location'])->findOrFail($record);
         $this->refreshItems();
     }
 
     public function refreshItems()
     {
-        $this->audit->load('items.asset');
-        $this->auditItems = $this->audit->items->groupBy('status')->toArray();
+        $this->audit->load(['items.asset.location']);
+
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
+
+        $allItems = $this->audit->items->filter(function ($item) use ($userDepartmentIds) {
+            return in_array($item->asset->department_id, $userDepartmentIds);
+        });
         
-        $this->stats['found'] = count($this->auditItems['Found'] ?? []);
-        $this->stats['missing'] = count($this->auditItems['Missing'] ?? []);
-        $this->stats['misplaced'] = count($this->auditItems['Misplaced'] ?? []);
+        // Group unfiltered first to calculate global stats
+        $groupedAll = $allItems->groupBy('status');
+        $this->stats['found'] = count($groupedAll['Found'] ?? []);
+        $this->stats['missing'] = count($groupedAll['Missing'] ?? []);
+        $this->stats['misplaced'] = count($groupedAll['Misplaced'] ?? []);
         $this->stats['total'] = $this->stats['found'] + $this->stats['missing'];
         $this->stats['progress'] = $this->stats['total'] > 0 
             ? round(($this->stats['found'] / $this->stats['total']) * 100) 
             : 0;
+
+        // Apply search query filter if set
+        $filteredItems = $allItems;
+        if (!empty(trim($this->searchQuery))) {
+            $search = strtolower(trim($this->searchQuery));
+            $filteredItems = $allItems->filter(function ($item) use ($search) {
+                $assetName = strtolower($item->asset->name ?? '');
+                $serialNumber = strtolower($item->asset->serial_number ?? '');
+                return str_contains($assetName, $search) || str_contains($serialNumber, $search);
+            });
+        }
+
+        $this->auditItems = $filteredItems->groupBy('status')->toArray();
+    }
+
+    public function updatedSearchQuery()
+    {
+        $this->refreshItems();
+    }
+
+    public function updatedScannedBarcode($value)
+    {
+        $query = trim($value);
+        if (strlen($query) >= 2) {
+            $this->searchResults = \App\Models\Asset::where('name', 'like', "%{$query}%")
+                ->orWhere('serial_number', 'like', "%{$query}%")
+                ->limit(5)
+                ->get()
+                ->toArray();
+        } else {
+            $this->searchResults = [];
+        }
+    }
+
+    public function selectAsset($assetId)
+    {
+        $asset = \App\Models\Asset::find($assetId);
+        if (!$asset) return;
+
+        $this->processAssetScan($asset);
+        
+        $this->scannedBarcode = '';
+        $this->searchResults = [];
+        $this->refreshItems();
     }
 
     public function scanBarcode()
@@ -49,8 +105,24 @@ class ScanAssetAudit extends Page
         $barcode = trim($this->scannedBarcode);
         if (empty($barcode)) return;
 
-        // Find asset by serial number
-        $asset = \App\Models\Asset::where('serial_number', $barcode)->first();
+        $asset = null;
+
+        // Try parsing URL if it's a URL
+        if (filter_var($barcode, FILTER_VALIDATE_URL)) {
+            $path = parse_url($barcode, PHP_URL_PATH);
+            if (preg_match('/assets\/(\d+)/', $path, $matches)) {
+                $asset = \App\Models\Asset::find($matches[1]);
+            }
+        }
+
+        if (!$asset) {
+            $asset = \App\Models\Asset::where('serial_number', $barcode)->first();
+        }
+
+        if (!$asset) {
+            // Fallback to finding by name if they typed it
+            $asset = \App\Models\Asset::where('name', $barcode)->first();
+        }
 
         if (!$asset) {
             \Filament\Notifications\Notification::make()
@@ -59,9 +131,19 @@ class ScanAssetAudit extends Page
                 ->danger()
                 ->send();
             $this->scannedBarcode = '';
+            $this->searchResults = [];
             return;
         }
 
+        $this->processAssetScan($asset);
+
+        $this->scannedBarcode = '';
+        $this->searchResults = [];
+        $this->refreshItems();
+    }
+
+    protected function processAssetScan($asset)
+    {
         // Check if asset is already in the audit items
         $existingItem = $this->audit->items()->where('asset_id', $asset->id)->first();
 
@@ -70,7 +152,7 @@ class ScanAssetAudit extends Page
             if ($existingItem->status !== 'Found') {
                 $existingItem->update([
                     'status' => 'Found',
-                    'scanned_serial_number' => $barcode,
+                    'scanned_serial_number' => $asset->serial_number,
                 ]);
                 \Filament\Notifications\Notification::make()
                     ->title(__('messages.audit.found_title'))
@@ -90,7 +172,7 @@ class ScanAssetAudit extends Page
                 'asset_audit_id' => $this->audit->id,
                 'asset_id' => $asset->id,
                 'status' => 'Misplaced',
-                'scanned_serial_number' => $barcode,
+                'scanned_serial_number' => $asset->serial_number,
             ]);
             \Filament\Notifications\Notification::make()
                 ->title(__('messages.audit.misplaced_title'))
@@ -98,9 +180,6 @@ class ScanAssetAudit extends Page
                 ->warning()
                 ->send();
         }
-
-        $this->scannedBarcode = '';
-        $this->refreshItems();
     }
 
     public function completeAudit()

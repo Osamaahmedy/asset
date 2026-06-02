@@ -40,6 +40,17 @@ class AssetAuditResource extends Resource
                             ->label(__('messages.field.audit_date'))
                             ->required()
                             ->default(now()),
+                        Forms\Components\Select::make('department_id')
+                            ->label(__('messages.field.department'))
+                            ->options(function () {
+                                return auth()->user()
+                                    ->departments()
+                                    ->pluck('departments.name', 'departments.id')
+                                    ->toArray();
+                            })
+                            ->required()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('location_id')
                             ->label(__('messages.field.location'))
                             ->relationship('location', 'name')
@@ -68,6 +79,10 @@ class AssetAuditResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('messages.field.name'))
                     ->default('Routine Audit')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('department.name')
+                    ->label(__('messages.field.department'))
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('location.name')
                     ->label(__('messages.field.location'))
@@ -105,6 +120,17 @@ class AssetAuditResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $userDepartmentIds = auth()->user()
+            ->departments()
+            ->pluck('departments.id')
+            ->toArray();
+
+        return parent::getEloquentQuery()
+            ->whereIn('department_id', $userDepartmentIds);
     }
 
     public static function getRelations(): array

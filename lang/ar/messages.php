@@ -276,6 +276,9 @@ return [
     'audit.misplaced_desc' => 'الأصل :name لا ينتمي لهذا الموقع!',
     'audit.completed_title' => 'اكتمل الجرد',
     'audit.completed_desc' => 'تم إغلاق جلسة الجرد بنجاح.',
+    'audit.filter_placeholder' => 'تصفية القائمة الحالية بالاسم أو الرقم التسلسلي...',
+    'audit.db_search_placeholder' => 'ابحث بالاسم أو الرقم التسلسلي للتسجيل يدوياً...',
+
 
     // Asset Statuses
     'asset_status.available' => 'متاح',
@@ -290,4 +293,65 @@ return [
     'maintenance_status.less_than_month' => '⚠️ أقل من شهر',
     'maintenance_status.less_than_two_months' => '🔔 أقل من شهرين',
     'maintenance_status.good' => '✅ جيدة',
+    // actions
+'action' => [
+    'handover' => 'استلام',
+    'return'   => 'إرجاع',
+],
+
+// conditions
+'condition' => [
+    'new'          => 'جديد',
+    'excellent'    => 'ممتاز',
+    'good'         => 'جيد',
+    'acceptable'   => 'مقبول',
+    'damaged'      => 'تالف',
+    'needs_repair' => 'يحتاج إصلاح',
+],
+
+// sections
+'section' => [
+    'basic_info'       => 'المعلومات الأساسية',
+    'handover_details' => 'تفاصيل الاستلام',
+    'return_details'   => 'تفاصيل الإرجاع',
+    'general_notes'    => 'ملاحظات عامة',
+],
+
+// fields
+'field' => [
+    'action_type'          => 'نوع الإجراء',
+    'handover_notes'       => 'ملاحظات الاستلام',
+    'return_notes'         => 'ملاحظات الإرجاع',
+],
+
+// filters
+'filter' => [
+    'active_handovers' => 'عهدة نشطة (لم ترجع)',
+    'returned'         => 'تمت الإرجاع',
+],
+
+    // Asset Replacement Requests
+    'resource.asset_replacement_requests' => 'طلبات استبدال الأصول',
+    'resource.asset_replacement_request' => 'طلب استبدال أصل',
+    'replacement.field.requester' => 'مقدم الطلب',
+    'replacement.field.reason' => 'السبب',
+    'replacement.field.target_location' => 'الموقع المستهدف',
+    'replacement.field.rejection_reason' => 'سبب الرفض',
+    'replacement.field.actioned_at' => 'تاريخ القرار',
+    'replacement.status.pending' => 'معلق',
+    'replacement.status.approved' => 'مقبول',
+    'replacement.status.rejected' => 'مرفوض',
+    'replacement.reason.completely_damaged' => 'تالف نهائياً',
+    'replacement.reason.expired' => 'منتهي الصلاحية',
+    'replacement.reason.other' => 'أخرى',
+    'replacement.section.request_details' => 'تفاصيل طلب الاستبدال',
+    'replacement.section.decision_details' => 'تفاصيل قرار الاستبدال',
+    'replacement.action.approve' => 'موافقة',
+    'replacement.action.reject' => 'رفض',
+    'replacement.action.approve_confirm' => 'هل أنت متأكد من الموافقة على طلب استبدال هذا الأصل؟ سيتم نقله تلقائياً للموقع المستهدف وتغيير حالته إلى تالف.',
+    'replacement.action.reject_confirm' => 'هل أنت متأكد من رفض هذا الطلب؟',
+    'replacement.action.request_replacement' => 'طلب استبدال',
+    'replacement.action.request_success' => 'تم تقديم طلب استبدال الأصل بنجاح وعهده الآن معلقة.',
+    'replacement.field.other_reason' => 'يرجى كتابة السبب بالتفصيل',
+    'replacement.field.notes' => 'ملاحظات إضافية',
 ];
