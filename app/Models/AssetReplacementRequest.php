@@ -18,6 +18,7 @@ class AssetReplacementRequest extends Model
         'target_location_id',
         'status', // pending, approved, rejected
         'approver_id',
+        'approver_employee_id',
         'rejection_reason',
         'actioned_at',
     ];
@@ -44,6 +45,11 @@ class AssetReplacementRequest extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    public function approverEmployee()
+    {
+        return $this->belongsTo(Employee::class, 'approver_employee_id');
     }
 
     protected static function booted()

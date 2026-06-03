@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\MaintenanceRequestController;
+use App\Http\Controllers\Api\PurchasingReplacementController;
+use App\Http\Controllers\Api\PurchasingExternalMaintenanceController;
 
 Route::middleware(['api.security'])->group(function () {
 
@@ -32,6 +34,29 @@ Route::middleware(['api.security'])->group(function () {
             Route::post('/maintenance-requests',     [MaintenanceRequestController::class, 'store']);
             Route::get('/maintenance-requests',      [MaintenanceRequestController::class, 'myRequests']);
             Route::get('/maintenance-requests/{id}', [MaintenanceRequestController::class, 'show']);
+        });
+
+        // ─── مسارات أمين المشتريات ─────────────────────────────────────────
+        Route::middleware(['api.purchasing'])->prefix('purchasing')->group(function () {
+
+            // طلبات الاستبدال — عرض + موافقة/رفض
+            Route::middleware(['api.throttle:read'])->group(function () {
+                Route::get('/replacement-requests',      [PurchasingReplacementController::class, 'index']);
+                Route::get('/replacement-requests/{id}', [PurchasingReplacementController::class, 'show']);
+            });
+            Route::middleware(['api.throttle:write'])->group(function () {
+                Route::post('/replacement-requests/{id}/approve', [PurchasingReplacementController::class, 'approve']);
+                Route::post('/replacement-requests/{id}/reject',  [PurchasingReplacementController::class, 'reject']);
+            });
+
+            // الصيانة الخارجية — عرض + تعديل (حالة + مبلغ + ملاحظة)
+            Route::middleware(['api.throttle:read'])->group(function () {
+                Route::get('/external-maintenance',      [PurchasingExternalMaintenanceController::class, 'index']);
+                Route::get('/external-maintenance/{id}', [PurchasingExternalMaintenanceController::class, 'show']);
+            });
+            Route::middleware(['api.throttle:write'])->group(function () {
+                Route::put('/external-maintenance/{id}', [PurchasingExternalMaintenanceController::class, 'update']);
+            });
         });
     });
 });

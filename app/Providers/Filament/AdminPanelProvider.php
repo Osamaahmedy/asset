@@ -59,7 +59,7 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             // ─── الخط والاتجاه والوضع الليلي ────────────────────────
-            ->font('Tajawal', provider: \Filament\FontProviders\GoogleFontProvider::class)
+           // ->font('Tajawal', provider: \Filament\FontProviders\GoogleFontProvider::class)
             ->darkMode(true)
 
             // ─── إعدادات الـ Sidebar الجانبي ──────────────────────

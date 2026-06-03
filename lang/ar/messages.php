@@ -210,6 +210,7 @@ return [
 
     'position.employee' => 'موظف',
     'position.office_manager' => 'مدير مكتب',
+    'position.purchasing_agent' => 'أمين مشتريات',
 
     // ─── Widget Stats ───────────────────────────────────────────────
     'widget.total_assets' => 'إجمالي الأصول',

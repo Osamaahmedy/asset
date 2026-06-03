@@ -138,9 +138,10 @@ class EmployeeResource extends Resource
                     ->badge()
                     ->formatStateUsing(fn($state) => Employee::positionOptions()[$state] ?? $state)
                     ->color(fn($state) => match($state) {
-                        'office_manager' => 'warning',
-                        'employee'       => 'primary',
-                        default          => 'gray',
+                        'office_manager'   => 'warning',
+                        'purchasing_agent' => 'success',
+                        'employee'         => 'primary',
+                        default            => 'gray',
                     }),
 
                 TextColumn::make('priority')

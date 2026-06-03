@@ -56,8 +56,9 @@ class Employee extends Model
     public static function positionOptions(): array
     {
         return [
-            'employee'       => __('messages.position.employee'),
-            'office_manager' => __('messages.position.office_manager'),
+            'employee'         => __('messages.position.employee'),
+            'office_manager'   => __('messages.position.office_manager'),
+            'purchasing_agent' => __('messages.position.purchasing_agent'),
         ];
     }
 

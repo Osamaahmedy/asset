@@ -18,6 +18,7 @@ class ExternalMaintenanceRequest extends Model
         'rejection_reason',
         'admin_note',
         'created_by',
+        'created_by_employee',
     ];
 
     public function maintenanceRequest(): BelongsTo
@@ -28,6 +29,11 @@ class ExternalMaintenanceRequest extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function creatorEmployee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'created_by_employee');
     }
 
     public static function statusOptions(): array

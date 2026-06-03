@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
              'api.auth' => \App\Http\Middleware\ApiAuthenticate::class,
              'api.throttle' => \App\Http\Middleware\ApiRateLimiter::class,
              'api.security' => \App\Http\Middleware\ApiSecurityHeaders::class,
+             'api.purchasing' => \App\Http\Middleware\PurchasingAgentMiddleware::class,
          ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -212,6 +212,7 @@ return [
 
     'position.employee' => 'Employee',
     'position.office_manager' => 'Office Manager',
+    'position.purchasing_agent' => 'Purchasing Agent',
 
     // ─── Widget Stats ───────────────────────────────────────────────
     'widget.total_assets' => 'Total Assets',
