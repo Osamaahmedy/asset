@@ -22,24 +22,19 @@ class AssetHandover extends Model
     protected static function booted()
     {
         static::saved(function ($handover) {
-            // When a handover is created or updated
-            if ($handover->asset_id && $handover->employee_id) {
-                if (is_null($handover->returned_at)) {
-                    // Not returned yet -> Assign asset to this employee and change status
+            if ($handover->asset_id) {
+                if ($handover->action_type === 'handover' && $handover->employee_id) {
+                    // استلام -> تغيير الموظف والحالة فقط إلى "في العهدة"
                     $handover->asset->update([
                         'employee_id' => $handover->employee_id,
-                        'is_personal' => true, // Assuming personal if assigned to employee
                         'status' => Asset::STATUS_IN_USE,
                     ]);
-                } else {
-                    // Returned -> Remove employee from asset if it matches and change status
-                    if ($handover->asset->employee_id == $handover->employee_id) {
-                        $handover->asset->update([
-                            'employee_id' => null,
-                            'is_personal' => false,
-                            'status' => Asset::STATUS_AVAILABLE,
-                        ]);
-                    }
+                } elseif ($handover->action_type === 'return') {
+                    // إرجاع -> إزالة الموظف وتغيير الحالة إلى "متاح"
+                    $handover->asset->update([
+                        'employee_id' => null,
+                        'status' => Asset::STATUS_AVAILABLE,
+                    ]);
                 }
             }
         });

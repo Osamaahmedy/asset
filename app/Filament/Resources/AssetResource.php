@@ -104,20 +104,32 @@ class AssetResource extends Resource
                                 ->toArray();
                         })
                         ->preload()
-                        ->searchable(),
+                        ->searchable()
+                        ->live()
+                        ->afterStateUpdated(fn (Forms\Set $set) => $set('employee_id', null)),
 
                     Select::make('employee_id')
                         ->label(__('messages.field.employee'))
-                        ->options(function (Forms\Get $get) {
+                        ->options(function (Forms\Get $get, ?Asset $record) {
                             $deptId = $get('department_id');
                             $query = Employee::with('department');
                             if ($deptId) {
                                 $query->where('department_id', $deptId);
                             }
-                            return $query->get()
+                            $options = $query->get()
                                 ->mapWithKeys(fn($emp) => [
                                     $emp->id => "{$emp->name} — {$emp->department?->name}"
                                 ]);
+
+                            // تأكد من ظهور الموظف الحالي في القائمة عند التعديل
+                            if ($record && $record->employee_id && !$options->has($record->employee_id)) {
+                                $currentEmployee = Employee::with('department')->find($record->employee_id);
+                                if ($currentEmployee) {
+                                    $options->put($currentEmployee->id, "{$currentEmployee->name} — {$currentEmployee->department?->name}");
+                                }
+                            }
+
+                            return $options;
                         })
                         ->searchable()
                         ->nullable()

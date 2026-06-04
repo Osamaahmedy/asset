@@ -65,24 +65,55 @@ class AssetHandoverResource extends Resource
                             ->required()
                             ->live()
                             ->native(false)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->afterStateUpdated(fn (Forms\Set $set) => $set('asset_id', null)),
 
                         Forms\Components\Select::make('asset_id')
                             ->label(__('messages.field.asset'))
                             ->relationship(
                                 name: 'asset',
                                 titleAttribute: 'name',
-                                modifyQueryUsing: function (Builder $query) {
+                                modifyQueryUsing: function (Builder $query, Get $get, ?\App\Models\AssetHandover $record) {
                                     $userDepartmentIds = auth()->user()
                                         ->departments()
                                         ->pluck('departments.id')
                                         ->toArray();
-                                    return $query->whereIn('department_id', $userDepartmentIds);
+                                    $query->whereIn('department_id', $userDepartmentIds);
+
+                                    if ($get('action_type') === 'handover') {
+                                        // استلام: عرض الأصول المتاحة فقط + الأصل الحالي في حالة التعديل
+                                        $query->where(function ($q) use ($record) {
+                                            $q->where('status', \App\Models\Asset::STATUS_AVAILABLE);
+                                            if ($record) {
+                                                $q->orWhere('id', $record->asset_id);
+                                            }
+                                        });
+                                    } elseif ($get('action_type') === 'return') {
+                                        // إرجاع: عرض الأصول في العهدة فقط + الأصل الحالي في حالة التعديل
+                                        $query->where(function ($q) use ($record) {
+                                            $q->where('status', \App\Models\Asset::STATUS_IN_USE);
+                                            if ($record) {
+                                                $q->orWhere('id', $record->asset_id);
+                                            }
+                                        });
+                                    }
+
+                                    return $query;
                                 }
                             )
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Forms\Set $set, Get $get, $state) {
+                                if ($get('action_type') === 'return' && $state) {
+                                    // عند الإرجاع: تعبئة الموظف تلقائياً من الأصل
+                                    $asset = \App\Models\Asset::find($state);
+                                    if ($asset && $asset->employee_id) {
+                                        $set('employee_id', $asset->employee_id);
+                                    }
+                                }
+                            })
                             ->columnSpan(1),
 
                         Forms\Components\Select::make('employee_id')
@@ -90,7 +121,8 @@ class AssetHandoverResource extends Resource
                             ->relationship('employee', 'name')
                             ->searchable()
                             ->preload()
-                            ->required()
+                            ->required(fn (Get $get): bool => $get('action_type') === 'handover')
+                            ->visible(fn (Get $get): bool => $get('action_type') === 'handover')
                             ->columnSpan(1),
 
                     ]),
@@ -257,6 +289,7 @@ class AssetHandoverResource extends Resource
                     ->options(self::conditionOptions()),
 
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),

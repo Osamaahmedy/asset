@@ -16,4 +16,16 @@ class EditAssetHandover extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if ($data['action_type'] === 'return' && !empty($data['asset_id'])) {
+            $asset = \App\Models\Asset::find($data['asset_id']);
+            if ($asset && $asset->employee_id) {
+                $data['employee_id'] = $asset->employee_id;
+            }
+        }
+
+        return $data;
+    }
 }
