@@ -10,6 +10,20 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+
+
+// في AuthController — أضف هذه الدالة الخاصة
+private function translatePosition(string $position): string
+{
+    return match($position) {
+        'employee'           => 'موظف',
+        'office_manager'     => 'مدير مكتب',
+        'purchasing_agent'   => 'أمين المشتريات',
+        'maintenance_tech'   => 'فني صيانة',
+        // أضف بقية القيم حسب الـ enum الخاص بك
+        default              => $position,
+    };
+}
     // ─── Login ───────────────────────────────────────────────────────────────
 
     public function login(Request $request)
@@ -45,7 +59,7 @@ class AuthController extends Controller
                     'id'         => $employee->id,
                     'name'       => $employee->name,
                     'phone'      => $employee->phone,
-                    'position'   => $employee->position,
+                    'position' => $this->translatePosition($employee->position),
                 ],
             ],
         ]);
@@ -65,7 +79,7 @@ class AuthController extends Controller
                 'id'       => $employee->id,
                 'name'     => $employee->name,
                 'phone'    => $employee->phone,
-                'position' => $employee->position,
+                'position' => $this->translatePosition($employee->position),
                 'department' => [
                     'id'   => $employee->department?->id,
                     'name' => $employee->department?->name,
