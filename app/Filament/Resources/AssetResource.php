@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AssetResource\Pages;
 use App\Models\Asset;
+use App\Models\Location;
 use App\Models\Department;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -75,12 +76,20 @@ class AssetResource extends Resource
                         ->preload()
                         ->nullable(),
 
-                    Select::make('location_id')
-                        ->label(__('messages.field.location'))
-                        ->relationship('location', 'name')
-                        ->searchable()
-                        ->preload()
-                        ->nullable(),
+                   Forms\Components\Select::make('location_id')
+    ->label(__('messages.field.location'))
+    ->options(function () {
+        return Location::query()
+            ->with('parent')
+            ->get()
+            ->mapWithKeys(fn ($location) => [
+                $location->id => $location->parent
+                    ? $location->parent->name . ' ← ' . $location->name
+                    : $location->name,
+            ]);
+    })
+    ->searchable()
+    ->nullable(),
 
                     Select::make('status')
                         ->label(__('messages.field.status'))
@@ -227,7 +236,7 @@ class AssetResource extends Resource
                         ->placeholder(__('messages.field.asset_type')),
                 ]),
 
-            
+
         ]);
     }
 

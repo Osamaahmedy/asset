@@ -71,9 +71,9 @@ class MaintenanceRequestResource extends Resource
                     Select::make('status')
                         ->label(__('messages.field.status'))
                         ->options([
-                            'pending'   => '🕐 ' . __('messages.status.pending'),
-                            'postponed' => '⏳ ' . __('messages.status.postponed'),
-                            'completed' => '✅ ' . __('messages.status.completed'),
+                            'pending'   => ' ' . __('messages.status.pending'),
+                            'postponed' => ' ' . __('messages.status.postponed'),
+                            'completed' => ' ' . __('messages.status.completed'),
                         ])
                         ->native(false)
                         ->required(),
@@ -153,9 +153,9 @@ class MaintenanceRequestResource extends Resource
                     ->label(__('messages.field.status'))
                     ->badge()
                     ->formatStateUsing(fn($state) => match($state) {
-                        'pending'   => '🕐 ' . __('messages.status.pending'),
-                        'postponed' => '⏳ ' . __('messages.status.postponed'),
-                        'completed' => '✅ ' . __('messages.status.completed'),
+                        'pending'   => ' ' . __('messages.status.pending'),
+                        'postponed' => ' ' . __('messages.status.postponed'),
+                        'completed' => ' ' . __('messages.status.completed'),
                         default     => $state,
                     })
                     ->color(fn($state) => match($state) {
@@ -210,12 +210,14 @@ class MaintenanceRequestResource extends Resource
                     ->options(MaintenanceRequest::priorityOptions()),
             ])
             ->actions([
-                // ✅ Action الترحيل الخارجي — في مكانه الصحيح هنا
                 Action::make('transfer_external')
                     ->label(__('messages.action.transfer_external'))
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->color('warning')
-                    ->visible(fn($record) => !$record->externalRequest()->exists())
+                    ->visible(fn ($record) =>
+    $record->status === 'pending' &&
+    ! $record->externalRequest()->exists()
+)
                     ->modalHeading(__('messages.action.transfer_external'))
                     ->modalWidth('2xl')
                     ->form([

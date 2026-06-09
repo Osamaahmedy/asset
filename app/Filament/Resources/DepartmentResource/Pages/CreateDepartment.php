@@ -17,6 +17,6 @@ class CreateDepartment extends CreateRecord
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'تم إنشاء القسم بنجاح';
+        return 'تم إنشاء المكتب بنجاح';
     }
 }

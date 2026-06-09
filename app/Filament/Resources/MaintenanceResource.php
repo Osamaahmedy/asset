@@ -117,9 +117,9 @@ class MaintenanceResource extends Resource
                         'danger'  => 'Pending',
                     ])
                     ->formatStateUsing(fn($state) => match ($state) {
-                        'Maintenance Completed' => '✅ ' . __('messages.status.completed'),
-                        'Postponed'            => '⏳ ' . __('messages.status.postponed'),
-                        'Pending'              => '🕐 ' . __('messages.status.pending'),
+                        'Maintenance Completed' => ' ' . __('messages.status.completed'),
+                        'Postponed'            => ' ' . __('messages.status.postponed'),
+                        'Pending'              => ' ' . __('messages.status.pending'),
                         default                => $state,
                     }),
 

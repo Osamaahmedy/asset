@@ -11,14 +11,14 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f3f4f6;
             min-height: 100vh;
             padding: 30px 20px;
         }
-        
+
         /* تحسين زر الطباعة */
         .print-btn {
             display: flex;
@@ -40,13 +40,13 @@
             box-shadow: 0 4px 18px rgba(79, 70, 229, 0.35);
             transition: all 0.25s ease-in-out;
         }
-        
+
         .print-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(79, 70, 229, 0.45);
             background: linear-gradient(135deg, #4338ca 0%, #2e2685 100%);
         }
-        
+
         /* ترويسة الصفحة لشكل أكثر احترافية */
         .page-header {
             text-align: center;
@@ -54,7 +54,7 @@
             color: #1f2937;
         }
         .page-header h2 { font-weight: 800; font-size: 22px; }
-        
+
         /* تنسيق صفحة الـ A4 والمعاينة */
         .page {
             background: white;
@@ -69,7 +69,7 @@
             gap: 8mm;
             justify-content: center;
         }
-        
+
         /* ستايل الملصق المطور */
         .label {
             height: 52mm;
@@ -85,7 +85,7 @@
             overflow: hidden;
             transition: all 0.2s ease;
         }
-        
+
         /* خط ملون جانبي جمالي يختفي تلقائياً عند الطباعة للمحافظة على الحبر */
         .label::before {
             content: '';
@@ -96,12 +96,12 @@
             height: 100%;
             background: #4f46e5;
         }
-        
+
         .label:hover {
             border-color: #4f46e5;
             box-shadow: 0 4px 20px rgba(79, 70, 229, 0.08);
         }
-        
+
         .info {
             flex: 1;
             display: flex;
@@ -110,7 +110,7 @@
             height: 100%;
             padding-left: 10px;
         }
-        
+
         .info-top strong {
             font-size: 15px;
             font-weight: 700;
@@ -119,18 +119,18 @@
             color: #111827;
             line-height: 1.4;
         }
-        
+
         .meta-item {
             margin-bottom: 4px;
             font-size: 12px;
         }
-        
+
         .label-text {
             color: #6b7280;
             font-weight: 600;
             margin-left: 4px;
         }
-        
+
         .value {
             color: #1f2937;
             font-weight: 700;
@@ -144,7 +144,7 @@
             font-family: monospace;
             font-size: 13px;
         }
-        
+
         .footer-text {
             font-size: 10px;
             color: #9ca3af;
@@ -153,7 +153,7 @@
             padding-top: 6px;
             margin-top: auto;
         }
-        
+
         /* صندوق الكيو آر */
         .qr-code {
             width: 100px;
@@ -167,25 +167,25 @@
             justify-content: center;
             flex-shrink: 0;
         }
-        
+
         .qr-code svg {
             width: 100%;
             height: 100%;
         }
-        
+
         /* إعدادات الطباعة الاحترافية */
         @media print {
             @page {
                 size: A4;
                 margin: 0;
             }
-            body { 
-                background: white; 
+            body {
+                background: white;
                 padding: 0;
                 margin: 0;
             }
-            .page { 
-                box-shadow: none; 
+            .page {
+                box-shadow: none;
                 padding: 10mm;
                 margin: 0;
                 width: 210mm;
@@ -193,8 +193,8 @@
                 border-radius: 0;
                 grid-template-columns: repeat(2, 1fr);
             }
-            .no-print { 
-                display: none !important; 
+            .no-print {
+                display: none !important;
             }
             .label {
                 border: 1px dashed #9ca3af; /* حد خفيف جداً يسهل القص مقصات الاستيكرات */
@@ -215,7 +215,7 @@
             <span>🖨️</span> طباعة ملصقات الجرد
         </button>
     </div>
-    
+
     <div class="page">
         @foreach($assets as $asset)
         <div class="label">
@@ -227,7 +227,7 @@
                         <span class="value serial-box">{{ $asset->serial_number }}</span>
                     </div>
                     <div class="meta-item">
-                        <span class="label-text">القسم:</span>
+                        <span class="label-text">المكتب:</span>
                         <span class="value">{{ $asset->department?->name ?? 'غير محدد' }}</span>
                     </div>
                 </div>

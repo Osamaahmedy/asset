@@ -38,7 +38,7 @@ class WarrantyExpiryWidget extends BaseWidget
                     ->copyable(),
 
                 Tables\Columns\TextColumn::make('department.name')
-                    ->label('القسم')
+                    ->label('المكتب')
                     ->badge(),
 
                 Tables\Columns\TextColumn::make('vendor.name')

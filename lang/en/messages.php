@@ -125,7 +125,7 @@ return [
     'field.notification_text' => 'Notification Text',
     'field.estimated_amount' => 'Estimated Amount',
     'field.technical_description' => 'Technical Description',
-    'field.required_parts' => 'Required Parts',
+    'field.required_parts' => ' Recommendations',
     'field.condition_on_handover' => 'Condition on Handover',
     'field.condition_on_return' => 'Condition on Return',
     'field.handed_over_at' => 'Handover Date',
@@ -154,7 +154,7 @@ return [
     'section.asset_classification' => 'Asset Classification',
     'section.maintenance_info' => 'Maintenance Information',
     'section.password' => 'Password',
-    'section.permissions_departments' => 'Permissions & Departments',
+    'section.permissions_departments' => 'Permissions & Offices',
     'section.role_info' => 'Role Information',
     'section.permissions' => 'Permissions',
     'section.admin_notes' => 'Admin Notes',
@@ -204,6 +204,23 @@ return [
     'priority.high' => 'High',
     'priority.medium' => 'Medium',
     'priority.low' => 'Low',
+    'field.sub_locations' => 'Sub Locations',
+    'field.root_location' => 'Root Location',
+
+    // messages.php
+'field' => [
+    'root_location'  => 'Root Location',
+    'sub_locations'  => 'Sub Locations',
+],
+'filter' => [
+    'root_locations' => 'Root Locations Only',
+],
+'error' => [
+    'has_children'   => 'Cannot delete location that has sub-locations',
+],
+'empty' => [
+    'no_locations'   => 'No locations found',
+],
 
     'external_status.pending' => 'Pending',
     'external_status.approved' => 'Approved',
