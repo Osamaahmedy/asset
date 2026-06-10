@@ -194,6 +194,10 @@
 
     .topbar { margin-bottom: 1.8rem; }
     .switch-icon { font-size: 1.1rem; }
+    .hover-primary:hover {
+      color: var(--primary) !important;
+      transition: color var(--transition);
+    }
   </style>
 </head>
 <body>
@@ -302,6 +306,16 @@
       </div>
     @endforeach
   </div>
+
+  {{-- ── Footer ──────────────────────────────────────── --}}
+  <footer class="mt-5 pt-4 border-top text-center text-muted" data-aos="fade-up">
+    <p class="mb-2">© {{ date('Y') }} نظام إدارة الأصول. جميع الحقوق محفوظة.</p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ route('privacy-policy') }}" class="text-decoration-none text-muted hover-primary">سياسة الخصوصية والسياسات</a>
+      <span>•</span>
+      <a href="{{ route('filament.admin.pages.dashboard') }}" class="text-decoration-none text-muted hover-primary">لوحة التحكم</a>
+    </div>
+  </footer>
 
 </div>
 

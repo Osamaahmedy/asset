@@ -5,6 +5,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy-policy');
+
+Route::get('/privacy', function () {
+    return redirect()->route('privacy-policy');
+});
 // use App\Http\Controllers\Api\NewsApiController;
 // 
 // Route::get('/news', [NewsApiController::class, 'index']);
