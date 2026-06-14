@@ -338,6 +338,7 @@ return [
     'action_type'          => 'نوع الإجراء',
     'handover_notes'       => 'ملاحظات الاستلام',
     'return_notes'         => 'ملاحظات الإرجاع',
+    'currency' => 'العملة',
 ],
 
 // filters
@@ -345,7 +346,17 @@ return [
     'active_handovers' => 'عهدة نشطة (لم ترجع)',
     'returned'         => 'تمت الإرجاع',
 ],
+   'currency' => [
+        'YER' => 'ريال يمني (YER)',
+        'SAR' => 'ريال سعودي (SAR)',
+        'USD' => 'دولار أمريكي (USD)',
+        'EUR' => 'يورو (EUR)',
 
+        'yer' => 'ريال يمني (YER)',
+        'sar' => 'ريال سعودي (SAR)',
+        'usd' => 'دولار أمريكي (USD)',
+        'eur' => 'يورو (EUR)',
+    ],
     // Asset Replacement Requests
     'resource.asset_replacement_requests' => 'طلبات استبدال الأصول',
     'resource.asset_replacement_request' => 'طلب استبدال أصل',

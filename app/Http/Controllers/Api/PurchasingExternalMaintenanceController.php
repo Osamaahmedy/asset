@@ -4,30 +4,39 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExternalMaintenanceRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PurchasingExternalMaintenanceController extends Controller
 {
-    // ─── عرض جميع طلبات الصيانة الخارجية ──────────────────────────────────────
+    private array $withRelations = [
+        'maintenanceRequest.asset.department.administration.sector',
+        'maintenanceRequest.asset.employee',
+        'maintenanceRequest.asset.location',
+        'maintenanceRequest.employee',
+        'creator',
+        'creatorEmployee',
+    ];
 
-    public function index(Request $request)
+    // ─── عرض جميع طلبات الصيانة الخارجية ──────────────────────────────────
+
+    public function index(Request $request): JsonResponse
     {
-        $query = ExternalMaintenanceRequest::with([
-            'maintenanceRequest.asset.department.administration.sector',
-            'maintenanceRequest.asset.employee',
-            'maintenanceRequest.asset.location',
-            'maintenanceRequest.employee',
-            'creator',
-            'creatorEmployee',
-        ]);
+        $query = ExternalMaintenanceRequest::with($this->withRelations);
 
         // فلترة حسب الحالة
-        if ($request->has('status') && in_array($request->status, ['pending', 'approved', 'completed', 'rejected'])) {
+        if ($request->filled('status') && in_array($request->status, ['pending', 'approved', 'completed', 'rejected'])) {
             $query->where('status', $request->status);
         }
 
-        // بحث حسب اسم الأصل
-        if ($request->has('search') && $request->search) {
+        // فلترة حسب العملة
+        if ($request->filled('currency') && in_array($request->currency, ['YER', 'SAR', 'USD', 'EUR'])) {
+            $query->where('currency', $request->currency);
+        }
+
+        // بحث حسب اسم الأصل أو الرقم التسلسلي
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('maintenanceRequest.asset', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -35,29 +44,27 @@ class PurchasingExternalMaintenanceController extends Controller
             });
         }
 
-        $requests = $query->latest()->get();
+        $perPage  = (int) $request->get('per_page', 15);
+        $requests = $query->latest()->paginate($perPage);
 
         return response()->json([
-            'success' => true,
-            'total'   => $requests->count(),
-            'data'    => $requests->map(fn($r) => $this->formatRequest($r)),
+            'success'      => true,
+            'total'        => $requests->total(),
+            'current_page' => $requests->currentPage(),
+            'last_page'    => $requests->lastPage(),
+            'per_page'     => $requests->perPage(),
+            'data'         => collect($requests->items())->map(fn($r) => $this->formatRequest($r)),
         ]);
     }
 
-    // ─── تفاصيل طلب واحد ─────────────────────────────────────────────────────
+    // ─── تفاصيل طلب واحد ─────────────────────────────────────────────────
 
-    public function show(Request $request, $id)
+    public function show($id): JsonResponse
     {
-        $externalRequest = ExternalMaintenanceRequest::with([
-            'maintenanceRequest.asset.department.administration.sector',
-            'maintenanceRequest.asset.employee',
-            'maintenanceRequest.asset.location',
-            'maintenanceRequest.employee',
-            'creator',
-            'creatorEmployee',
-        ])->find($id);
-
-        if (!$externalRequest) {
+        try {
+            $externalRequest = ExternalMaintenanceRequest::with($this->withRelations)
+                ->findOrFail($id);
+        } catch (ModelNotFoundException) {
             return response()->json([
                 'success' => false,
                 'message' => 'الطلب غير موجود',
@@ -70,20 +77,21 @@ class PurchasingExternalMaintenanceController extends Controller
         ]);
     }
 
-    // ─── تعديل الطلب (الحالة + المبلغ + الملاحظة) ────────────────────────────
+    // ─── تعديل الطلب (الحالة + المبلغ + العملة + الملاحظة) ───────────────
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $request->validate([
             'status'           => 'sometimes|in:pending,approved,completed,rejected',
             'estimated_amount' => 'sometimes|numeric|min:0',
+            'currency'         => 'sometimes|in:YER,SAR,USD,EUR',
             'admin_note'       => 'sometimes|nullable|string|max:2000',
             'rejection_reason' => 'required_if:status,rejected|nullable|string|max:1000',
         ]);
 
-        $externalRequest = ExternalMaintenanceRequest::find($id);
-
-        if (!$externalRequest) {
+        try {
+            $externalRequest = ExternalMaintenanceRequest::findOrFail($id);
+        } catch (ModelNotFoundException) {
             return response()->json([
                 'success' => false,
                 'message' => 'الطلب غير موجود',
@@ -92,20 +100,10 @@ class PurchasingExternalMaintenanceController extends Controller
 
         $updateData = [];
 
-        if ($request->has('status')) {
-            $updateData['status'] = $request->status;
-        }
-
-        if ($request->has('estimated_amount')) {
-            $updateData['estimated_amount'] = $request->estimated_amount;
-        }
-
-        if ($request->has('admin_note')) {
-            $updateData['admin_note'] = $request->admin_note;
-        }
-
-        if ($request->has('rejection_reason')) {
-            $updateData['rejection_reason'] = $request->rejection_reason;
+        foreach (['status', 'estimated_amount', 'currency', 'admin_note', 'rejection_reason'] as $field) {
+            if ($request->has($field)) {
+                $updateData[$field] = $request->$field;
+            }
         }
 
         if (empty($updateData)) {
@@ -116,15 +114,7 @@ class PurchasingExternalMaintenanceController extends Controller
         }
 
         $externalRequest->update($updateData);
-
-        $externalRequest->load([
-            'maintenanceRequest.asset.department.administration.sector',
-            'maintenanceRequest.asset.employee',
-            'maintenanceRequest.asset.location',
-            'maintenanceRequest.employee',
-            'creator',
-            'creatorEmployee',
-        ]);
+        $externalRequest->load($this->withRelations);
 
         return response()->json([
             'success' => true,
@@ -133,12 +123,13 @@ class PurchasingExternalMaintenanceController extends Controller
         ]);
     }
 
-    // ─── Helper: تنسيق بيانات الطلب ─────────────────────────────────────────
+    // ─── Helper: تنسيق بيانات الطلب ──────────────────────────────────────
 
     private function formatRequest(ExternalMaintenanceRequest $r): array
     {
-        $mr = $r->maintenanceRequest;
-        $statusOptions = ExternalMaintenanceRequest::statusOptions();
+        $mr             = $r->maintenanceRequest;
+        $statusOptions  = ExternalMaintenanceRequest::statusOptions();
+        $currencyOptions = ExternalMaintenanceRequest::currencyOptions();
 
         return [
             'id'                    => $r->id,
@@ -146,6 +137,8 @@ class PurchasingExternalMaintenanceController extends Controller
             'status_label'          => $statusOptions[$r->status] ?? $r->status,
             'technical_description' => $r->technical_description,
             'estimated_amount'      => $r->estimated_amount,
+            'currency'              => $r->currency,
+            'currency_label'        => $currencyOptions[$r->currency] ?? $r->currency,
             'required_parts'        => $r->required_parts,
             'rejection_reason'      => $r->rejection_reason,
             'admin_note'            => $r->admin_note,
@@ -170,13 +163,11 @@ class PurchasingExternalMaintenanceController extends Controller
                 'status'              => $mr->status,
                 'priority'            => $mr->priority,
 
-                // الموظف اللي قدم طلب الصيانة
                 'employee' => $mr->employee ? [
                     'id'   => $mr->employee->id,
                     'name' => $mr->employee->name,
                 ] : null,
 
-                // الأصل
                 'asset' => $mr->asset ? [
                     'id'            => $mr->asset->id,
                     'name'          => $mr->asset->name,

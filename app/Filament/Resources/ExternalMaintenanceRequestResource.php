@@ -14,18 +14,34 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 
 class ExternalMaintenanceRequestResource extends Resource
 {
     protected static ?string $model = ExternalMaintenanceRequest::class;
 
-    protected static ?string $navigationIcon   = 'heroicon-o-arrow-top-right-on-square';
-    protected static ?int    $navigationSort   = 4;
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-top-right-on-square';
+    protected static ?int $navigationSort = 4;
 
-    public static function getNavigationLabel(): string { return __('messages.resource.external_requests'); }
-    public static function getNavigationGroup(): ?string { return __('messages.nav.asset_management'); }
-    public static function getModelLabel(): string { return __('messages.resource.external_request'); }
-    public static function getPluralModelLabel(): string { return __('messages.resource.external_requests'); }
+    public static function getNavigationLabel(): string
+    {
+        return __('messages.resource.external_requests');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('messages.nav.asset_management');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('messages.resource.external_request');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('messages.resource.external_requests');
+    }
 
     public static function form(Form $form): Form
     {
@@ -39,15 +55,15 @@ class ExternalMaintenanceRequestResource extends Resource
                         ->relationship(
                             'maintenanceRequest',
                             'id',
-                            fn($query) => $query->with('asset')
+                            fn ($query) => $query->with('asset')
                         )
                         ->getOptionLabelFromRecordUsing(
-                            fn($record) => "#{$record->id} — {$record->asset?->name}"
+                            fn ($record) => "#{$record->id} — " . ($record->asset?->name ?? '—')
                         )
                         ->searchable()
                         ->preload()
                         ->required()
-                        ->disabled(fn($context) => $context === 'edit')
+                        ->disabled(fn ($context) => $context === 'edit')
                         ->columnSpanFull(),
                 ]),
 
@@ -66,7 +82,17 @@ class ExternalMaintenanceRequestResource extends Resource
                         ->label(__('messages.field.estimated_amount'))
                         ->numeric()
                         ->minValue(0)
-                        ->placeholder('0.00'),
+                        ->step('0.01')
+                        ->placeholder('0.00')
+                        ->required(),
+
+                    Select::make('currency')
+                        ->label(__('messages.field.currency'))
+                        ->options(ExternalMaintenanceRequest::currencyOptions())
+                        ->searchable()
+                        ->native(false)
+                        ->default('YER')
+                        ->required(),
 
                     Textarea::make('required_parts')
                         ->label(__('messages.field.required_parts'))
@@ -92,11 +118,11 @@ class ExternalMaintenanceRequestResource extends Resource
                         ->placeholder(__('messages.field.notes')),
 
                     Textarea::make('rejection_reason')
-                        ->label(__('messages.field.notes'))
+                        ->label(__('messages.field.rejection_reason'))
                         ->rows(3)
-                        ->placeholder(__('messages.field.notes'))
+                        ->placeholder(__('messages.field.rejection_reason'))
                         ->columnSpanFull()
-                        ->visible(fn($get) => $get('status') === 'rejected'),
+                        ->visible(fn ($get) => $get('status') === 'rejected'),
                 ]),
         ]);
     }
@@ -129,12 +155,25 @@ class ExternalMaintenanceRequestResource extends Resource
                 TextColumn::make('technical_description')
                     ->label(__('messages.field.technical_description'))
                     ->limit(40)
-                    ->tooltip(fn($record) => $record->technical_description)
+                    ->tooltip(fn ($record) => $record->technical_description)
                     ->searchable(),
 
                 TextColumn::make('estimated_amount')
                     ->label(__('messages.field.estimated_amount'))
-                    ->money('YER')
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($state === null || $state === '') {
+                            return '—';
+                        }
+
+                        return number_format((float) $state, 2) . ' ' . ($record->currency ?? 'YER');
+                    })
+                    ->sortable(),
+
+                TextColumn::make('currency')
+                    ->label(__('messages.field.currency'))
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => ExternalMaintenanceRequest::currencyOptions()[$state] ?? $state)
+                    ->color('success')
                     ->sortable(),
 
                 TextColumn::make('required_parts')
@@ -146,8 +185,8 @@ class ExternalMaintenanceRequestResource extends Resource
                 TextColumn::make('status')
                     ->label(__('messages.field.status'))
                     ->badge()
-                    ->formatStateUsing(fn($state) => ExternalMaintenanceRequest::statusOptions()[$state] ?? $state)
-                    ->color(fn($state) => ExternalMaintenanceRequest::statusColors()[$state] ?? 'gray'),
+                    ->formatStateUsing(fn ($state) => ExternalMaintenanceRequest::statusOptions()[$state] ?? $state)
+                    ->color(fn ($state) => ExternalMaintenanceRequest::statusColors()[$state] ?? 'gray'),
 
                 TextColumn::make('creator.name')
                     ->label(__('messages.field.by_user'))
@@ -164,6 +203,10 @@ class ExternalMaintenanceRequestResource extends Resource
                 SelectFilter::make('status')
                     ->label(__('messages.field.status'))
                     ->options(ExternalMaintenanceRequest::statusOptions()),
+
+                SelectFilter::make('currency')
+                    ->label(__('messages.field.currency'))
+                    ->options(ExternalMaintenanceRequest::currencyOptions()),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -176,7 +219,7 @@ class ExternalMaintenanceRequestResource extends Resource
             ->emptyStateHeading(__('messages.empty.no_external_requests'));
     }
 
-    public static function getPages(): array
+   public static function getPages(): array
     {
         return [
             'index'  => Pages\ListExternalMaintenanceRequests::route('/'),
@@ -185,7 +228,7 @@ class ExternalMaintenanceRequestResource extends Resource
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
             ->with([

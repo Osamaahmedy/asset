@@ -211,6 +211,7 @@ return [
 'field' => [
     'root_location'  => 'Root Location',
     'sub_locations'  => 'Sub Locations',
+    'currency' => 'Currency',
 ],
 'filter' => [
     'root_locations' => 'Root Locations Only',
@@ -221,6 +222,18 @@ return [
 'empty' => [
     'no_locations'   => 'No locations found',
 ],
+  'currency' => [
+        'YER' => 'Yemeni Rial (YER)',
+        'SAR' => 'Saudi Riyal (SAR)',
+        'USD' => 'US Dollar (USD)',
+        'EUR' => 'Euro (EUR)',
+
+        'yer' => 'Yemeni Rial (YER)',
+        'sar' => 'Saudi Riyal (SAR)',
+        'usd' => 'US Dollar (USD)',
+        'eur' => 'Euro (EUR)',
+    ],
+
 
     'external_status.pending' => 'Pending',
     'external_status.approved' => 'Approved',

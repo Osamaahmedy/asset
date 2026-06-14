@@ -2,23 +2,29 @@
 
 namespace App\Models;
 
+use App\Traits\LogsActivityInArabic;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExternalMaintenanceRequest extends Model
 {
-    use \App\Traits\LogsActivityInArabic;
+    use LogsActivityInArabic;
 
     protected $fillable = [
         'maintenance_request_id',
         'technical_description',
         'estimated_amount',
+        'currency',
         'required_parts',
         'status',
         'rejection_reason',
         'admin_note',
         'created_by',
         'created_by_employee',
+    ];
+
+    protected $casts = [
+        'estimated_amount' => 'decimal:2',
     ];
 
     public function maintenanceRequest(): BelongsTo
@@ -39,10 +45,10 @@ class ExternalMaintenanceRequest extends Model
     public static function statusOptions(): array
     {
         return [
-            'pending'   => '⏳ ' . __('messages.external_status.pending'),
-            'approved'  => '✅ ' . __('messages.external_status.approved'),
-            'completed' => '🏁 ' . __('messages.external_status.completed'),
-            'rejected'  => '❌ ' . __('messages.external_status.rejected'),
+            'pending'   => __('messages.external_status.pending'),
+            'approved'  => __('messages.external_status.approved'),
+            'completed' => __('messages.external_status.completed'),
+            'rejected'  => __('messages.external_status.rejected'),
         ];
     }
 
@@ -53,6 +59,16 @@ class ExternalMaintenanceRequest extends Model
             'approved'  => 'success',
             'completed' => 'info',
             'rejected'  => 'danger',
+        ];
+    }
+
+    public static function currencyOptions(): array
+    {
+        return [
+            'YER' => __('messages.currency.yer'),
+            'SAR' => __('messages.currency.sar'),
+            'USD' => __('messages.currency.usd'),
+            'EUR' => __('messages.currency.eur'),
         ];
     }
 }
