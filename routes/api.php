@@ -20,8 +20,11 @@ Route::middleware(['api.security'])->group(function () {
         Route::middleware(['api.throttle:read'])
             ->get('/auth/profile', [AuthController::class, 'profile']);
 
+
         Route::middleware(['api.throttle:write'])
             ->post('/auth/logout', [AuthController::class, 'logout']);
+        Route::middleware(['api.throttle:write'])
+            ->post('/auth/change-password', [AuthController::class, 'changePassword']);
 
         // Assets — قراءة فقط
         Route::middleware(['api.throttle:read'])->group(function () {

@@ -107,4 +107,31 @@ private function translatePosition(string $position): string
             'message' => 'تم تسجيل الخروج بنجاح',
         ]);
     }
+  public function changePassword(Request $request)
+{
+    $request->validate([
+        'new_password' => 'required|string|min:8|confirmed',
+    ], [
+        'new_password.required'  => 'كلمة المرور الجديدة مطلوبة',
+        'new_password.min'       => 'كلمة المرور الجديدة يجب ألا تقل عن 8 أحرف',
+        'new_password.confirmed' => 'تأكيد كلمة المرور غير متطابق',
+    ]);
+
+    $employee = $request->user();
+
+    if (!$employee) {
+        return response()->json([
+            'success' => false,
+            'message' => 'غير مصرح',
+        ], 401);
+    }
+
+    $employee->password = $request->new_password;
+    $employee->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'تم تغيير كلمة المرور بنجاح',
+    ]);
+}
 }
