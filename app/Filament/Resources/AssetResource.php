@@ -468,6 +468,14 @@ class AssetResource extends Resource
                             ->success()
                             ->send();
                     }),
+
+                Tables\Actions\Action::make('printReplacementReport')
+                    ->label(__('messages.action.print_report'))
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->visible(fn (Asset $record) => $record->replacementRequests()->exists())
+                    ->url(fn (Asset $record) => route('replacement.report.export', $record->replacementRequests()->latest()->first()?->id))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

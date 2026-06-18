@@ -77,6 +77,7 @@ return [
     'action.mark_all_read' => 'Mark All as Read',
     'action.transfer_external' => 'Transfer External',
     'action.scan_barcode' => 'Scan Barcode',
+    'action.print_report' => 'Print Report',
 
     // ─── Common Fields ──────────────────────────────────────────────
     'field.name' => 'Name',
@@ -124,8 +125,8 @@ return [
     'field.is_read' => 'Read?',
     'field.notification_text' => 'Notification Text',
     'field.estimated_amount' => 'Estimated Amount',
-    'field.technical_description' => 'Technical Description',
-    'field.required_parts' => ' Recommendations',
+    'field.technical_description' => 'Technical Report',
+    'field.required_parts' => ' Recommendations  of Technical Maintenance',
     'field.condition_on_handover' => 'Condition on Handover',
     'field.condition_on_return' => 'Condition on Return',
     'field.handed_over_at' => 'Handover Date',

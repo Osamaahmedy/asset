@@ -40,3 +40,19 @@ Route::get('/assets/print-barcodes', function (\Illuminate\Http\Request $request
 
     return view('assets.print-barcodes', compact('assets'));
 })->name('assets.print-barcodes');
+
+// ─── Maintenance Report Word Export ─────────────────────────
+Route::get('/maintenance-report/{id}/export', function ($id) {
+    if (!auth()->check()) {
+        abort(403);
+    }
+    return app(\App\Http\Controllers\MaintenanceReportController::class)->export($id);
+})->name('maintenance.report.export');
+
+// ─── Replacement Request Report Word Export ─────────────────
+Route::get('/replacement-report/{id}/export', function ($id) {
+    if (!auth()->check()) {
+        abort(403);
+    }
+    return app(\App\Http\Controllers\ReplacementReportController::class)->export($id);
+})->name('replacement.report.export');

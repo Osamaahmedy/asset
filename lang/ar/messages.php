@@ -81,6 +81,7 @@ return [
     'action.mark_all_read' => 'تحديد الكل كمقروء',
     'action.transfer_external' => 'ترحيل خارجي',
     'action.scan_barcode' => 'مسح الباركود',
+    'action.print_report' => 'طباعة التقرير',
 
     // ─── Common Fields ──────────────────────────────────────────────
     'field.name' => 'الاسم',
@@ -128,8 +129,8 @@ return [
     'field.is_read' => 'مقروء؟',
     'field.notification_text' => 'نص الإشعار',
     'field.estimated_amount' => 'المبلغ التقديري (ريال)',
-    'field.technical_description' => 'الوصف الفني',
-    'field.required_parts' => ' التوصيات',
+    'field.technical_description' => ' التقرير الفني ',
+    'field.required_parts' => ' توصيات فني الصيانة',
     'field.condition_on_handover' => 'حالة الأصل عند التسليم',
     'field.condition_on_return' => 'حالة الأصل عند الإرجاع',
     'field.handed_over_at' => 'تاريخ التسليم',

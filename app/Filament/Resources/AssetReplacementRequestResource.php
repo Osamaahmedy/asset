@@ -281,6 +281,13 @@ class AssetReplacementRequestResource extends Resource
                             ->send();
                     }),
 
+                Action::make('print_report')
+                    ->label(__('messages.action.print_report'))
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->url(fn ($record) => route('replacement.report.export', $record->id))
+                    ->openUrlInNewTab(),
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
