@@ -27,28 +27,29 @@ class ReplacementReportController extends Controller
         ])->findOrFail($id);
 
         \PhpOffice\PhpWord\Settings::setDefaultRtl(true);
+        \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
 
         $phpWord = new PhpWord();
         $phpWord->setDefaultFontName('Arial');
-        $phpWord->setDefaultFontSize(11);
+        $phpWord->setDefaultFontSize(10);
 
         $section = $phpWord->addSection([
             'pageSizeW'    => 11906,
             'pageSizeH'    => 16838,
-            'marginTop'    => 700,
-            'marginBottom' => 700,
-            'marginLeft'   => 900,
-            'marginRight'  => 900,
+            'marginTop'    => 500,
+            'marginBottom' => 500,
+            'marginLeft'   => 700,
+            'marginRight'  => 700,
             'bidi'         => true,
         ]);
 
         // ─── أنماط الخطوط ──────────────────────────────────
-        $titleFont    = ['bold' => true,  'size' => 15, 'name' => 'Arial'];
-        $subtitleFont = ['bold' => true,  'size' => 10, 'name' => 'Arial'];
-        $headerFont   = ['bold' => true,  'size' => 11, 'name' => 'Arial'];
-        $labelFont    = ['bold' => true,  'size' => 11, 'name' => 'Arial'];
-        $valueFont    = ['size' => 11, 'name' => 'Arial'];
-        $smallFont    = ['size' => 9,  'name' => 'Arial'];
+        $titleFont    = ['bold' => true,  'size' => 13, 'name' => 'Arial', 'rtl' => true];
+        $subtitleFont = ['bold' => true,  'size' => 9,  'name' => 'Arial'];
+        $headerFont   = ['bold' => true,  'size' => 10, 'name' => 'Arial', 'rtl' => true];
+        $labelFont    = ['bold' => true,  'size' => 9.5, 'name' => 'Arial', 'rtl' => true];
+        $valueFont    = ['size' => 9.5, 'name' => 'Arial', 'rtl' => true];
+        $smallFont    = ['size' => 8.5,  'name' => 'Arial'];
 
         // ─── أنماط الفقرات ─────────────────────────────────
         $centerRtl = ['alignment' => Jc::CENTER, 'bidi' => true];
@@ -86,8 +87,8 @@ class ReplacementReportController extends Controller
 
         $headerFontWhite = array_merge($headerFont, ['color' => 'FFFFFF']);
         $valueW = $this->fullWidth - $this->labelW;
-        $rowH   = 420;
-        $rowHL  = 850;
+        $rowH   = 340;
+        $rowHL  = 600;
 
         // ═══════════════════════════════════════════════════
         // الترويسة
@@ -226,25 +227,25 @@ class ReplacementReportController extends Controller
         $half   = intdiv($this->fullWidth, 2);
         $sigTbl = $section->addTable(array_merge($tblOpts, ['cellMargin' => 80]));
 
-        // صف العناوين
+        // صف العناوين: المسؤول المعتمد أولاً (يسار) ثم مقدم الطلب ثانياً (يمين)
         $sigTbl->addRow($rowH);
-        $sigTbl->addCell($half, $labelCell)->addText('مقدم الطلب', $labelFont, $centerRtl);
         $sigTbl->addCell($half, $labelCell)->addText('المسؤول المعتمد', $labelFont, $centerRtl);
+        $sigTbl->addCell($half, $labelCell)->addText('مقدم الطلب', $labelFont, $centerRtl);
 
-        // صف الأسماء
+        // صف الأسماء: المسؤول المعتمد أولاً (يسار) ثم مقدم الطلب ثانياً (يمين)
         $sigTbl->addRow($rowH);
-        $sigTbl->addCell($half, $valueCell)->addText($record->requester?->name ?? '..................', $valueFont, $centerRtl);
         $sigTbl->addCell($half, $valueCell)->addText($record->approver?->name  ?? '..................', $valueFont, $centerRtl);
+        $sigTbl->addCell($half, $valueCell)->addText($record->requester?->name ?? '..................', $valueFont, $centerRtl);
 
         // صف التوقيع (مساحة فارغة)
-        $sigTbl->addRow(800);
+        $sigTbl->addRow(500);
         $sigTbl->addCell($half, $valueCell)->addText('التوقيع: ................................', $valueFont, $rightRtl);
         $sigTbl->addCell($half, $valueCell)->addText('التوقيع: ................................', $valueFont, $rightRtl);
 
-        // صف التاريخ
+        // صف التاريخ: المسؤول المعتمد أولاً (يسار) ثم مقدم الطلب ثانياً (يمين)
         $sigTbl->addRow($rowH);
-        $sigTbl->addCell($half, $valueCell)->addText('التاريخ: ' . ($record->created_at?->format('Y/m/d')   ?? '    /    /    '), $valueFont, $rightRtl);
         $sigTbl->addCell($half, $valueCell)->addText('التاريخ: ' . ($record->actioned_at?->format('Y/m/d') ?? '    /    /    '), $valueFont, $rightRtl);
+        $sigTbl->addCell($half, $valueCell)->addText('التاريخ: ' . ($record->created_at?->format('Y/m/d')   ?? '    /    /    '), $valueFont, $rightRtl);
 
         $section->addTextBreak(1);
 
@@ -262,9 +263,12 @@ class ReplacementReportController extends Controller
 
         IOFactory::createWriter($phpWord, 'Word2007')->save($tempPath);
 
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
         return response()->download($tempPath, $fileName, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'Content-Disposition' => 'attachment; filename*=UTF-8\'\'' . rawurlencode($fileName),
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         ])->deleteFileAfterSend(true);
     }
 
@@ -281,7 +285,7 @@ class ReplacementReportController extends Controller
     }
 
     /**
-     * جدول بيانات ثنائي الأعمدة
+     * جدول بيانات ثنائي الأعمدة مع تقسيمها إلى 4 أعمدة مضغوطة
      * الترتيب الصحيح RTL: التسمية يمين (تُضاف أولاً) ← القيمة يسار
      */
     private function dataTable(
@@ -297,12 +301,38 @@ class ReplacementReportController extends Controller
         array $paraStyle,
         array $tblOpts
     ): void {
-        $tbl = $section->addTable(array_merge($tblOpts, ['cellMargin' => 80]));
-        foreach ($rows as [$label, $value]) {
+        $tbl = $section->addTable(array_merge($tblOpts, ['cellMargin' => 60]));
+        
+        // تقسيم البيانات إلى أزواج (كل زوج يمثل عمودين: التسمية والقيمة)
+        $chunked = array_chunk($rows, 2);
+        
+        $lW = 1600;
+        $vW = 3353;
+        
+        foreach ($chunked as $rowPairs) {
             $tbl->addRow($rowH);
-            // RTL: أضف التسمية أولاً (ستظهر يميناً) ثم القيمة (ستظهر يساراً)
-            $tbl->addCell($labelW, $labelCell)->addText($label . ':', $labelFont, $paraStyle);
-            $tbl->addCell($valueW, $valueCell)->addText((string) $value,   $valueFont, $paraStyle);
+            
+            if (count($rowPairs) === 2) {
+                $p1 = $rowPairs[0];
+                $p2 = $rowPairs[1];
+                
+                // في bidiVisual الخلية المضافة أولاً تظهر يساراً.
+                // لذا للحصول على الترتيب RTL (الزوج الأول يميناً والثاني يساراً):
+                // نضيف الزوج الثاني أولاً: [القيمة] ثم [التسمية]
+                $tbl->addCell($vW, $valueCell)->addText((string)$p2[1], $valueFont, $paraStyle);
+                $tbl->addCell($lW, $labelCell)->addText($p2[0] . ':', $labelFont, $paraStyle);
+                
+                // ثم نضيف الزوج الأول: [القيمة] ثم [التسمية]
+                $tbl->addCell($vW, $valueCell)->addText((string)$p1[1], $valueFont, $paraStyle);
+                $tbl->addCell($lW, $labelCell)->addText($p1[0] . ':', $labelFont, $paraStyle);
+            } else {
+                $p1 = $rowPairs[0];
+                
+                // إذا كان هناك زوج واحد متبقي، نترك المساحة اليسرى فارغة (مدمجة)
+                $tbl->addCell($vW + $lW, $valueCell)->addText('', $valueFont, $paraStyle);
+                $tbl->addCell($vW, $valueCell)->addText((string)$p1[1], $valueFont, $paraStyle);
+                $tbl->addCell($lW, $labelCell)->addText($p1[0] . ':', $labelFont, $paraStyle);
+            }
         }
     }
 }

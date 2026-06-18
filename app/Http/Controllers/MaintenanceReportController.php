@@ -23,6 +23,7 @@ class MaintenanceReportController extends Controller
         ])->findOrFail($id);
 
         \PhpOffice\PhpWord\Settings::setDefaultRtl(true);
+        \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
 
         $phpWord = new PhpWord();
 
@@ -42,13 +43,13 @@ class MaintenanceReportController extends Controller
         ]);
 
         // ─── Styles ────────────────────────────────────────────
-        $titleStyle = ['bold' => true, 'size' => 14, 'name' => 'Arial'];
+        $titleStyle = ['bold' => true, 'size' => 14, 'name' => 'Arial', 'rtl' => true];
         $subtitleStyle = ['bold' => true, 'size' => 10, 'name' => 'Arial'];
-        $headerFontAr = ['bold' => true, 'size' => 11, 'name' => 'Arial'];
+        $headerFontAr = ['bold' => true, 'size' => 11, 'name' => 'Arial', 'rtl' => true];
         $headerFontEn = ['bold' => true, 'size' => 9, 'name' => 'Arial'];
-        $normalFont = ['size' => 11, 'name' => 'Arial'];
+        $normalFont = ['size' => 11, 'name' => 'Arial', 'rtl' => true];
         $smallFont = ['size' => 9, 'name' => 'Arial'];
-        $boldFont = ['bold' => true, 'size' => 11, 'name' => 'Arial'];
+        $boldFont = ['bold' => true, 'size' => 11, 'name' => 'Arial', 'rtl' => true];
         $centerPara = ['alignment' => Jc::CENTER, 'bidi' => true];
         $rtlPara = ['alignment' => Jc::RIGHT, 'bidi' => true];
         $leftPara = ['alignment' => Jc::START, 'bidi' => false];
@@ -82,13 +83,13 @@ class MaintenanceReportController extends Controller
 
         $headerTable->addRow(1200);
 
-        // Ministry Logo (right side in RTL)
-        $ministryLogoPath = public_path('images/logos/ministry_logo.jpg');
-        $rightCell = $headerTable->addCell(2500, ['valign' => 'center']);
-        if (file_exists($ministryLogoPath)) {
-            $rightCell->addImage($ministryLogoPath, [
-                'width' => 80,
-                'height' => 80,
+        // Republic Emblem (left side in RTL) - added first so it appears on the left
+        $republicLogoPath = public_path('images/logos/republic_emblem.jpg');
+        $leftCell = $headerTable->addCell(2500, ['valign' => 'center']);
+        if (file_exists($republicLogoPath)) {
+            $leftCell->addImage($republicLogoPath, [
+                'width' => 70,
+                'height' => 55,
                 'alignment' => Jc::CENTER,
             ]);
         }
@@ -96,23 +97,23 @@ class MaintenanceReportController extends Controller
         // Title (center)
         $centerCell = $headerTable->addCell(5300, ['valign' => 'center']);
         $centerCell->addText(
-            'تقرير اصيانة اجهزة الحاسب الآلي وملحقاتها',
-            ['bold' => true, 'size' => 13, 'name' => 'Arial'],
+            'تقرير صيانة أجهزة الحاسب الآلي وملحقاتها',
+            ['bold' => true, 'size' => 13, 'name' => 'Arial', 'rtl' => true],
             $centerPara
         );
         $centerCell->addText(
-            'Report for maintenance a computer and its peripherals',
+            'Report for maintenance of a computer and its peripherals',
             ['bold' => true, 'size' => 9, 'name' => 'Arial'],
             ['alignment' => Jc::CENTER]
         );
 
-        // Republic Emblem (left side in RTL)
-        $republicLogoPath = public_path('images/logos/republic_emblem.jpg');
-        $leftCell = $headerTable->addCell(2500, ['valign' => 'center']);
-        if (file_exists($republicLogoPath)) {
-            $leftCell->addImage($republicLogoPath, [
-                'width' => 70,
-                'height' => 55,
+        // Ministry Logo (right side in RTL) - added third so it appears on the right
+        $ministryLogoPath = public_path('images/logos/ministry_logo.jpg');
+        $rightCell = $headerTable->addCell(2500, ['valign' => 'center']);
+        if (file_exists($ministryLogoPath)) {
+            $rightCell->addImage($ministryLogoPath, [
+                'width' => 80,
+                'height' => 80,
                 'alignment' => Jc::CENTER,
             ]);
         }
@@ -304,28 +305,28 @@ class MaintenanceReportController extends Controller
             'bidiVisual' => true,
         ]);
 
-        // Tec. Name row
+        // Tec. Name row (English added first -> shows left, Arabic second -> shows right)
         $sigTable->addRow(400);
-        $nameCell1 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
-        $techName = $record->employee?->name ?? '..................';
-        $nameCell1->addText("اسم الفني:  {$techName}", $normalFont, $rtlPara);
         $nameCell2 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
+        $techName = $record->employee?->name ?? '..................';
         $nameCell2->addText("Tec. Name:  {$techName}", $normalFont, $leftPara);
+        $nameCell1 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
+        $nameCell1->addText("اسم الفني:  {$techName}", $normalFont, $rtlPara);
 
-        // Date row
+        // Date row (English added first -> shows left, Arabic second -> shows right)
         $sigTable->addRow(400);
-        $dateCell1 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
         $sigDate = $record->updated_at ? $record->updated_at->format('Y/m/d') : '    /    /    ';
-        $dateCell1->addText("التاريخ:  {$sigDate}", $normalFont, $rtlPara);
         $dateCell2 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
         $dateCell2->addText("Date:  {$sigDate}                    Signature: ..................", $normalFont, $leftPara);
+        $dateCell1 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
+        $dateCell1->addText("التاريخ:  {$sigDate}", $normalFont, $rtlPara);
 
-        // Signature label
+        // Signature label (English added first -> shows left, Arabic second -> shows right)
         $sigTable->addRow(400);
-        $sigLabelCell1 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
-        $sigLabelCell1->addText('التوقيع: ..................', $normalFont, $rtlPara);
         $sigLabelCell2 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
         $sigLabelCell2->addText('', $normalFont, $leftPara);
+        $sigLabelCell1 = $sigTable->addCell(intval($fullWidth / 2), $cellStyle);
+        $sigLabelCell1->addText('التوقيع: ..................', $normalFont, $rtlPara);
 
         $section->addTextBreak(1);
 
@@ -406,6 +407,10 @@ class MaintenanceReportController extends Controller
 
         $writer = IOFactory::createWriter($phpWord, 'Word2007');
         $writer->save($tempPath);
+
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
 
         return response()->download($tempPath, $fileName, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
