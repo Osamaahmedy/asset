@@ -130,11 +130,11 @@ class MaintenanceRequestResource extends Resource
                     ->weight('bold'),
 
                 TextColumn::make('employee.name')
-                    ->label(__('messages.field.employee'))
+                    ->label('صاحب الطلب')
                     ->searchable(),
 
                 TextColumn::make('asset.employee.name')
-                    ->label(__('messages.field.employee'))
+                    ->label('الموظف المسؤول عن الأصل')
                     ->searchable()
                     ->default('—'),
 
