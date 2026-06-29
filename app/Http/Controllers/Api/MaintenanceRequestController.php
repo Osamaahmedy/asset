@@ -12,19 +12,15 @@ use Illuminate\Support\Facades\DB;
 
 class MaintenanceRequestController extends Controller
 {
-    // ─── إرسال طلب صيانة جديد ────────────────────────────────────────────────
 
     public function store(MaintenanceRequestStoreRequest $request)
     {
         $employee = $request->user();
 
-        // 1. استخدام قفل ذري (Atomic Lock) على مستوى التطبيق لمنع التزامن على نفس الأصل
         $lockKey = 'maintenance_request_lock_' . $request->asset_id;
-        $lock = Cache::lock($lockKey, 10); // قفل لمدة 10 ثوانٍ كأقصى حد
-
+        $lock = Cache::lock($lockKey, 10); 
         try {
-            // محاولة الحصول على القفل بدون انتظار (أو انتظار خفيف جداً)
-            // إذا كان القفل محجوزاً بالفعل من طلب آخر متزامن، نرجع رد 429
+          
             if (!$lock->get()) {
                 return response()->json([
                     'success' => false,
@@ -32,11 +28,9 @@ class MaintenanceRequestController extends Controller
                 ], 429);
             }
 
-            // 2. استخدام Transaction مع Pessimistic Lock لمنع الـ Race Condition في قاعدة البيانات
             return DB::transaction(function () use ($request, $employee) {
                 
-                // جلب الأصل مع قفل للقراءة والتعديل لمنع أي معاملة أخرى من تعديله متزامناً
-                $asset = Asset::where('id', $request->asset_id)
+              $asset = Asset::where('id', $request->asset_id)
                     ->where('department_id', $employee->department_id)
                     ->lockForUpdate()
                     ->first();
@@ -48,7 +42,6 @@ class MaintenanceRequestController extends Controller
                     ], 403);
                 }
 
-                // فحص وجود طلب معلق أو مؤجل مع قفل
                 $existing = MaintenanceRequest::where('asset_id', $request->asset_id)
                     ->whereIn('status', ['pending', 'postponed'])
                     ->lockForUpdate()
