@@ -1608,7 +1608,7 @@ CREATE TABLE `nas` (
   `server` varchar(64) DEFAULT NULL,
   `community` varchar(50) DEFAULT NULL,
   `description` varchar(200) DEFAULT 'RADIUS Client'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `nas`
@@ -1626,7 +1626,7 @@ INSERT INTO `nas` (`id`, `nasname`, `shortname`, `type`, `ports`, `secret`, `ser
 CREATE TABLE `nasreload` (
   `nasipaddress` varchar(15) NOT NULL,
   `reloadtime` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
